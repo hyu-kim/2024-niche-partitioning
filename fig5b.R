@@ -10,6 +10,13 @@ cnet <- read.csv("data/SIP_cnet.csv")
 cnet_info <- read.csv("data/SIP_sample_info.csv")
 biovolume <- read.table("data/biovolume.txt", header = TRUE, sep = ',')
 
+# Here we assume that bacterial cell number and Cnet are conditionally 
+# independent given algal cell number. For each microplate, the amount of 
+# bacterial incorporation of algal carbon is estimated by multiplying Cnet median
+# with total bacterial number per ring. It is then divided by algal cell number
+# to disentangle the algal effect. Normalized values are used for statistical
+# analysis, e.g., average or sd.
+
 # get statistics from count data
 count_bact_stat <- count_bact %>%
   group_by(Treatment, Ring) %>%
