@@ -6,7 +6,9 @@ library(scales)
 # import data
 count_bact <- read.csv("data/flow2_day14_bact.csv")
 count_pt <- read.csv("data/flow2_day14_pt.csv")
-cnet_stat <- read.csv("data/SIP_cnet_day14.csv")
+cnet <- read.csv("data/SIP_cnet.csv")
+cnet_info <- read.csv("data/SIP_sample_info.csv")
+biovolume <- read.table("data/biovolume.txt", header = TRUE, sep = ',')
 
 # get statistics from count data
 count_bact_stat <- count_bact %>%

@@ -4,7 +4,7 @@ library(ggforce)
 library("dplyr")
 library("ggbreak")
 
-df <- read.csv(file='data/SIP_summary.csv')
+df <- read.csv(file='data/SIP_all.csv')
 df_vis <- df[(df$isotope=='c')&(df$distance=='outer'),]
 df_vis_stat <- df_vis %>%
   group_by(treatment) %>%
@@ -18,7 +18,7 @@ df_stat <- df[df$isotope=='c',] %>%
   summarize(q25 = quantile(value, probs = 0.25), 
             q50 = quantile(value, probs = 0.5),
             q75 = quantile(value, probs = 0.75))
-write.csv(df_stat, 'data/SIP_cnet_day14.csv', row.names=FALSE)
+write.csv(df_stat, 'data/SIP_cnet_summary.csv', row.names=FALSE)
 
 
 # draw figures
