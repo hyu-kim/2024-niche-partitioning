@@ -1,4 +1,4 @@
-## Combines count and Cnet data in one plot (day 14)
+## Combines count, Cnet, biovolume in one plot (day 14)
 library("dplyr")
 library(ggplot2)
 library(scales)
@@ -31,7 +31,7 @@ for (row in 1:nrow(df)){
 
 # plot
 setEPS()
-postscript("figures/fig5a.eps", width = 2, height = 2)
+postscript("figures/fig5b.eps", width = 2.5, height = 2)
 
 ggplot(df, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treatment)) + 
   geom_point(size=2.5, stroke=0.5) + 
@@ -39,8 +39,8 @@ ggplot(df, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treatment)) +
   geom_errorbarh(aes(xmax = cnet_q75, xmin = cnet_q25), height=0.02, linewidth=0.2) + 
   # scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
   #               labels = trans_format("log10", math_format(10^.x))) +
-  scale_x_continuous(trans='log10') +
-  scale_y_continuous(trans='log10') +
+  scale_x_continuous(trans='log10', breaks=c(0.1)) +
+  scale_y_continuous(trans='log10', breaks=c(10^6, 10^7)) +
   annotation_logticks(short = unit(0.1, "cm"),
                       mid = unit(0.1, "cm"),
                       long = unit(0.2, "cm"),
@@ -59,6 +59,7 @@ ggplot(df, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treatment)) +
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
         axis.line = element_line(size = 0.2),
+        axis.ticks = element_blank()
         )
 
 dev.off()
