@@ -8,7 +8,7 @@ count_bact <- read.csv("data/flow2_day14_bact.csv")
 count_pt <- read.csv("data/flow2_day14_pt.csv")
 cnet <- read.csv("data/SIP_cnet.csv")
 cnet_info <- read.csv("data/SIP_sample_info.csv")
-biovolume <- read.table("data/biovolume.txt", header = TRUE, sep = ',')
+mass <- read.table("data/mass.csv", header = TRUE, sep = ',')  # [fg]
 
 count_bact$Ring[count_bact$Ring==1] <- 'inner'
 count_bact$Ring[count_bact$Ring==2] <- 'outer'
@@ -25,7 +25,8 @@ count_bact_summ <- count_bact %>%
   group_by(Treatment, Ring, Microplate) %>%
   summarize(abd_mean = mean(Abundance), 
             abd_sd = sd(Abundance),
-            count_total = 6*mean(Abundance)
+            abd_med = median(Abundance),
+            count_total = 6 * median(Abundance)
             ) # merge over 6 wells per ring
 
 # summarize cnet
@@ -52,10 +53,10 @@ cnet_summ <- cnet %>%
             cnet_q75 = quantile(Cnet, probs = 0.75)
             )
 
-# merge count, cnet, biovolume, algal count in to df
+# merge count, cnet, mass, algal count in to df
 df <- select(cnet_summ, treatment, microplate, ring, strain, cnet_q50)
 df$count_total <- NA
-df$biovolume <- NA
+df$mass_c <- NA
 df$count_pt <- NA
 df <- df[df$strain!='none',]
 
@@ -69,18 +70,18 @@ for (row in 1:nrow(df)){
       count_bact_summ$Ring == r &
       count_bact_summ$Microplate == m
     ]
-  df[row, 'biovolume'] <- biovolume$Biovolume[biovolume$Genus==st]
+  df[row, 'mass_c'] <- mass$mass[mass$Genus==st]
   df[row, 'count_pt'] <- count_pt$Abundance[
     count_pt$Treatment==t & 
       count_pt$Microplate==m
     ]
 }
 
-df$c_incorp <- df$cnet_q50 * df$count_total * df$biovolume
-df$c_incorp_pt <- df$c_incorp / df$count_pt
+df$c_incorp <- df$cnet_q50 * df$count_total * df$mass_c
+df$c_incorp_pt <- df$c_incorp / (df$count_pt * mass[4, 'mass'])
 
 # remove Alcani, microplate 2 from df, confirming with XM
-df <- df[!(df$treatment=='Alcanivorax' & df$microplate==2),]
+# df <- df[!(df$treatment=='Alcanivorax' & df$microplate==2),]
 
 # plot
 pdf("figures/fig5b.pdf", width = 2.5, height = 2)
@@ -96,7 +97,7 @@ ggplot(df, aes(x=microplate,
                      levels=c('Devosia', 'Marinobacter', 'Alcanivorax', 'none')
                      )) +
   # geom_text(aes(label=round(c_incorp_pt, digits = 4)), vjust=0.5, alpha=1) +
-  ylim(0, 0.08) +
+  # ylim(0, 0.08) +
   # ylab("Incorporated algal carbon (um3)") +
   scale_fill_manual(values=c("#E06666", "#4061f4", "#AB7942", "#5b5b5b")) +  # Alcani, Devosi, Marino, none
   scale_alpha_discrete(range=c(0.3, 1)) +

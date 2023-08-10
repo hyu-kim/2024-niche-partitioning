@@ -1,18 +1,56 @@
+library("dplyr")
+
 ### Continued from "fig4_pm_count.R"
 ## PLOT FOLD INCREASE
 # Plot by Treatment and Ring
 boxplot(fold~Strain, data=df_fold[df_fold$Ring==1,], main="Ring 1", 
         xlab="Strain", ylab="Fold increase")
 
+
 # before correction, bacteria only
+df_fold_stat <- df_fold %>%
+  group_by(Treatment, Ring) %>%
+  summarize(q25 = quantile(fold_log, probs = 0.25), 
+            q50 = quantile(fold_log, probs = 0.5),
+            q75 = quantile(fold_log, probs = 0.75))
+
+df_fold_outer <- df_fold[df_fold$Ring==2,]
+df_fold_stat_outer <- df_fold_stat[df_fold_stat$Ring==2,]
+
 setEPS()
-postscript("figures/fig_flow2_outer.eps")
-boxplot(fold_log~Treatment, data=df_fold[df_fold$Ring==2,], main="Ring 2 (Marinobacter)", 
-        xlab="Strain in Ring 1", ylab="Fold increase",
-        names=c('B7WZ', 'EA2', 'None', '3-2')
-        # ylim=c(0,20)
-)
+postscript("figures/fig4_rate_outer.eps", width = 2, height = 2.5)
+
+ggplot() +
+  geom_sina(data = df_fold_outer, 
+            aes(Treatment, fold_log/9, color=Treatment),
+            scale = 'width',
+            size=1.2,
+            maxwidth = 0.6) +
+  geom_errorbar(data=df_fold_stat_outer, 
+                aes(x=Treatment, ymin=q25/9, ymax=q75/9),
+                width = 0.15, color='black', size=0.4) + 
+  geom_errorbar(data=df_fold_stat_outer, 
+                aes(x=Treatment, ymin=q50/9, ymax=q50/9),
+                width = 0.3, color='black', size=0.8) + 
+  # labs(x = "Isolate in inner", y = "Growth rate per day",
+  #      title = "Outer ring (Marinobacter)") +
+  scale_color_manual(values=c("#C00000","#0432FF","#AB7942","#000000")) +
+  theme(strip.background = element_rect(fill=NA),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.border = element_blank(),
+        legend.position = "none",
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.line.y.right = element_blank(),
+        axis.line = element_line(),
+        axis.title = element_blank()
+  )
+
 dev.off()
+
 
 # after correction with algae number
 setEPS()
@@ -29,15 +67,6 @@ ggplot() +
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_rect(colour = "black", fill=NA, size=0.5))
-dev.off()
-
-setEPS()
-postscript("figures/fig_flow2_outer_corrected_box.eps")
-boxplot(fold2_log~Treatment, data=df_fold2,
-        xlab="Strain in Ring 1", ylab="Fold increase",
-        names=c('B7WZ', 'EA2', 'None', '3-2')
-        # ylim=c(0,20)
-)
 dev.off()
 
 

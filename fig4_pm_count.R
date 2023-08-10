@@ -53,9 +53,12 @@ for(i in 1:nrow(unique(df_cond))){
 df_fold$Strain <- factor(df_fold$Strain, 
                          levels=c('Devosia EAB7WZ', 'Alcanivorax EA2', 
                                   'None', 'Marinobacter 3-2'))
-df_fold$Treatment <- factor(df_fold$Treatment, levels=c(1, 3, 2, 4))
-df_fold$fold_log <- log2(df_fold$fold)
-df_fold$fold2_log <- log2(df_fold$fold2)
+df_fold$Treatment <- factor(df_fold$Treatment, 
+                            levels=c('Alcanivorax', 'Devosia',  
+                                     'Marinobacter', 'none')
+                            )
+df_fold$fold_log <- log(df_fold$fold)  # natural log
+df_fold$fold2_log <- log(df_fold$fold2)
 
 
 
