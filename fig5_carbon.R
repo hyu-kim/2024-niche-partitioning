@@ -7,7 +7,7 @@ size_pt$Biovolume <- pi/12 * size_pt$Length * (size_pt$Width)^2
 
 # calculate C mass from biovolume
 size_bact$mass <- (88.6 * size_bact$Biovolume^0.59) * 0.86  # [fg] Mayali et al 2023 Nat Comm
-size_bact$mass <- exp(4.28) * (size_bact$Biovolume^1.12)  # [fg] Menden-Deuer et al 2000 Limnol Oceangr
+size_bact$mass <- exp(4.28) * (size_bact$Biovolume^1.12)  # [fg] Fagerbakke et al 1996 Aquat Microb Ecol
 size_pt$mass <- 288 * size_pt$Biovolume^0.811  # [fg] Menden-Deuer et al 2000 Limnol Oceangr
 
 # export data

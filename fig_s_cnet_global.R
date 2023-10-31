@@ -3,6 +3,7 @@ library("ggplot2")
 library(ggforce)
 library("dplyr")
 library("ggbreak")
+library(FSA)
 
 df <- read.csv(file='data/SIP_all.csv')
 df_vis <- df[(df$isotope=='c'),]
@@ -26,7 +27,7 @@ ggplot() +
   geom_sina(data = df_vis, 
             aes(x=distance, y=value, color=treatment), 
             maxwidth = 0.7, 
-            alpha=0.6, 
+            alpha=0.3, 
             size=0.8) +
   facet_grid(cols = vars(treatment)) +
   geom_errorbar(data=df_vis_stat, 
@@ -39,7 +40,8 @@ ggplot() +
   # ylim(NA, 0.24) +
   # scale_y_continuous(breaks = append(seq(0, 0.09, 0.03), seq(0.10, 0.25, 0.1))) +
   # scale_y_break(c(0.09, 0.10), scales=0.2) +
-  scale_color_manual(values=c("#E06666","#4061f4","#7c4202","#5b5b5b")) +  # Alcani, Devosi, Marino, none
+  scale_color_manual(values=c("#E06666","#4061f4","#7c4202","#5b5b5b")) +  
+    # Alcani, Devosi, Marino, none
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
@@ -56,6 +58,13 @@ ggsave("figures/SIP_cnet_global.pdf", width = 6, height = 4)
 
 
 # statistical test
+df_outer <- df_vis[df_vis$distance=='outer',]
+df_outer['treatment_p'] <- df_outer['treatment']!='none'
+kruskal.test(value~treatment_p, data=df_outer)
+
+kruskal.test(value~treatment, data=df_outer)
+dunnTest(value~treatment, data=df_outer, method='holm')
+
 t.test(df_vis[df_vis$treatment=='Alcanivorax',4], df_vis[df_vis$treatment=='Devosia',4])
 t.test(df_vis[df_vis$treatment=='Alcanivorax',4], df_vis[df_vis$treatment=='Marinobacter',4])
 t.test(df_vis[df_vis$treatment=='Devosia',4], df_vis[df_vis$treatment=='Marinobacter',4])
