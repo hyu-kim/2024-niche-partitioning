@@ -127,28 +127,21 @@ def get_stats(df, strain):
     return df_out
 
 
-def filter_substrate(df_stat, strain, fold_threshold=1.05, wavelength=600):
+def filter_substrate(df_stat, strain, fold_threshold=1.05):
     print('  filtering ' + strain + ' ..')
     # default filter
-    df_out = df_stat[(df_stat['wavelength'] == wavelength)]
-    df_out.loc[:,'filter_bin'] = np.zeros(len(df_out), dtype = bool)
+    df_out = df_stat.copy()
+    df_out.loc[:,'fold_index'] = np.zeros(len(df_out))
     index = (df_stat['rate_mean'] > 0) & (df_stat['fold_max'] > 1)
-    index_out = np.zeros(len(df_out), dtype = bool)
+    index_A1 = (df_out['well'] == 'A1')
 
     # filter by comparing to control (A1)
-    index_A1 = (df_out['well'] == 'A1')
     for plate in ['PM1', 'PM2A']:
-        index_plate = (df_out['plate'] == plate)
-        fold_max_A1 = df_out.loc[index_plate & index_A1, 'fold_max'].values[0]
-        index_out = (df_out['fold_max'] > fold_max_A1*fold_threshold) \
-            & index_plate | index_out
+        index_plate_A1 = (df_out['plate'] == plate) & index_A1
+        fold_max_A1 = df_out.loc[index_plate_A1, 'fold_max'].values[0]
+        index_plate = index & (df_out.loc[df_out['plate'] == plate, 'fold_max'] > fold_max_A1*fold_threshold)
+        df_out.loc[index_plate, 'fold_index'] = (df_out.loc[index_plate, 'fold_max'] - fold_max_A1) / fold_max_A1
 
-    # filter by mean growth rate
-    index_out = (df_out['rate_mean'] > 0) & index_out
-
-    df_out.loc[index_out, 'filter_bin'] = True
-    df_out.loc[:,'filter_bin'] = df_out.loc[:,'filter_bin'].astype(int)
-    
     return df_out
 
 
@@ -163,34 +156,49 @@ list_strain.remove('19DW')
 
 df = pd.DataFrame(columns = ['strain', 'plate', 'time', 'well', 
     'wavelength', 'od'])
+
+substrates_sum_dict = {
+    '3-2': 17,
+    '4BL': 25,
+    '4D': 9,
+    '11-3': 75,
+    '13A': 10,
+    '13C1': np.nan,
+    'ARW1R1': 43,
+    'ARW1T': 51,
+    'ARW7G5W': np.nan,
+    'ARW7G5Y1': 40,
+    'EAB7W2': np.nan
+    }
+
 fold_threshold_dict = {
-    '3-2': 2,
+    '3-2': 1.6,
     '4BL': 1.2,
     '4D': 1.2,
-    '11-3': 1.2,
-    '13A': 1.2,
+    '11-3': 1,
+    '13A': 1.3,
     '13C1': 1.2,
     'ARW1R1': 1.2,
-    'ARW1T': 1.2,
+    'ARW1T': 1.6,
     'ARW7G5W': 1.2,
     'ARW7G5Y1': 1.2,
     'EAB7W2': 1.2
     }
 
-# for strain in list_strain:
-for strain in ['3-2']:
-    print('reading ' + strain + ' ..')
-    df = merge_readings_strain(strain)
-    df = get_fold_rate(df, strain)
-    df.to_csv('data/biolog/reads_merged/' + strain + '.csv', index = False)
+for strain in list_strain:
+# for strain in ['ARW7G5Y1']:
+    # print('reading ' + strain + ' ..')
+    # df = merge_readings_strain(strain)
+    # df = get_fold_rate(df, strain)
+    # df.to_csv('data/biolog/reads_merged/' + strain + '.csv', index = False)
     # df = pd.read_csv('data/biolog/reads_merged/' + strain + '.csv')
 
-    df_stat = get_stats(df, strain)
-    df_stat.to_csv('data/biolog/summary/stats/' + strain + '.csv', index = False)
-    # df_stat = pd.read_csv('data/biolog/summary/stats/' + strain + '.csv')
+    # df_stat = get_stats(df, strain)
+    # df_stat.to_csv('data/biolog/summary/stats/' + strain + '.csv', index = False)
+    df_stat = pd.read_csv('data/biolog/summary/stats/' + strain + '.csv')
     
-    df_stat_filtered = filter_substrate(df_stat, strain, fold_threshold=fold_threshold_dict[strain])
-    print(sum(df_stat_filtered['filter_bin']))
+    df_stat_filtered = filter_substrate(df_stat, strain)
+    # print('current: ' + str(sum(df_stat_filtered['fold_index'])) + '   target: ' + str(substrates_sum_dict[strain]))
     df_stat_filtered.to_csv('data/biolog/summary/' + strain + '.csv', index = False)
 
     # plot_readings(df, strain)
