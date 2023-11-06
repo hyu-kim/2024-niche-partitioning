@@ -2,6 +2,7 @@
 library("ggplot2")
 library(ggforce)
 library("dplyr")
+# detach(package:plyr)
 library("ggbreak")
 
 df <- read.csv(file='data/SIP_all.csv')
@@ -63,3 +64,17 @@ t.test(df_vis[df_vis$treatment=='Devosia',4], df_vis[df_vis$treatment=='Marinoba
 t.test(df_vis[df_vis$treatment=='none',4], df_vis[df_vis$treatment=='Alcanivorax',4])
 t.test(df_vis[df_vis$treatment=='none',4], df_vis[df_vis$treatment=='Devosia',4])
 t.test(df_vis[df_vis$treatment=='none',4], df_vis[df_vis$treatment=='Marinobacter',4])
+
+kruskal.test(value ~ treatment, data = df_vis)
+pairwise.wilcox.test(df_vis$value, df_vis$treatment, p.adjust.method = "BH")
+
+print(
+  cat(
+    'Alcanivorax:', (df_vis_stat$q50[1]-df_vis_stat$q50[4]) / df_vis_stat$q50[4], 
+    '\n',
+    'Devosia:', (df_vis_stat$q50[2]-df_vis_stat$q50[4]) / df_vis_stat$q50[4], 
+    '\n',
+    'Marinobacter:', (df_vis_stat$q50[3]-df_vis_stat$q50[4]) / df_vis_stat$q50[4],
+    '\n'
+    )
+  )

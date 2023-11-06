@@ -24,7 +24,7 @@ df_alg$Treatment[df_alg$Treatment==4] <- 'Marinobacter'
 ## Compute fold increase, day 5 -- 14
 df_fold <- data.frame(matrix(nrow=0, ncol=7))
 colnames(df_fold) <- c('Strain', 'Treatment', 'Microplate', 'Ring', 'Direction',
-                       'fold', 'fold2')
+                       'fold', 'fold_adj')
 
 conds <- c('Treatment', 'Microplate', 'Ring', 'Direction')
 df_cond <- df[,conds]
@@ -45,7 +45,7 @@ for(i in 1:nrow(unique(df_cond))){
                          Ring=df_ext[1,6], 
                          Direction=df_ext[1,7], 
                          fold=val,
-                         fold2=val/val2)
+                         fold_adj=val/val2)
     df_fold[nrow(df_fold)+1, ] = df_app
   }
 }
@@ -58,7 +58,7 @@ df_fold$Treatment <- factor(df_fold$Treatment,
                                      'Marinobacter', 'none')
                             )
 df_fold$fold_log <- log(df_fold$fold)  # natural log
-df_fold$fold2_log <- log(df_fold$fold2)
+df_fold$fold_adj_log <- log(df_fold$fold_adj)
 
 
 

@@ -7,30 +7,30 @@ boxplot(fold~Strain, data=df_fold[df_fold$Ring==1,], main="Ring 1",
         xlab="Strain", ylab="Fold increase")
 
 
-# before correction, bacteria only
+# bacteria growth rate
+df_fold$rate <- df_fold$fold_log / 9
 df_fold_stat <- df_fold %>%
   group_by(Treatment, Ring) %>%
-  summarize(q25 = quantile(fold_log, probs = 0.25), 
-            q50 = quantile(fold_log, probs = 0.5),
-            q75 = quantile(fold_log, probs = 0.75))
+  summarize(q25 = quantile(rate, probs = 0.25), 
+            q50 = quantile(rate, probs = 0.5),
+            q75 = quantile(rate, probs = 0.75))
 
 df_fold_outer <- df_fold[df_fold$Ring==2,]
 df_fold_stat_outer <- df_fold_stat[df_fold_stat$Ring==2,]
 
 setEPS()
 postscript("figures/fig4_rate_outer.eps", width = 2, height = 2.5)
-
 ggplot() +
   geom_sina(data = df_fold_outer, 
-            aes(Treatment, fold_log/9, color=Treatment),
+            aes(Treatment, rate, color=Treatment),
             scale = 'width',
             size=1.2,
             maxwidth = 0.6) +
   geom_errorbar(data=df_fold_stat_outer, 
-                aes(x=Treatment, ymin=q25/9, ymax=q75/9),
+                aes(x=Treatment, ymin=q25, ymax=q75),
                 width = 0.15, color='black', size=0.4) + 
   geom_errorbar(data=df_fold_stat_outer, 
-                aes(x=Treatment, ymin=q50/9, ymax=q50/9),
+                aes(x=Treatment, ymin=q50, ymax=q50),
                 width = 0.3, color='black', size=0.8) + 
   # labs(x = "Isolate in inner", y = "Growth rate per day",
   #      title = "Outer ring (Marinobacter)") +
@@ -52,7 +52,7 @@ ggplot() +
 dev.off()
 
 
-# after correction with algae number
+# corrected by algae number
 setEPS()
 postscript("figures/fig_flow2_outer_corrected.eps")
 ggplot() +
@@ -76,7 +76,7 @@ postscript("figures/fig_count_day5+14_inner.eps", width = 6, height = 5)
 boxplot(Abundance~Time+Treatment, 
         data=df[(df$Ring==1)&(df$Treatment!=2),], 
         log = "y",
-        at = c(1:2, 4:5, 7:8),
+        # at = c(1:2, 4:5, 7:8),
         col = c('pink','tomato'),
         xlab="Strain in Ring 1", ylab="Bacteria (1/ml)",
         # names=c('Alcani', 'Devosi', 'Marino', 'Empty'),
