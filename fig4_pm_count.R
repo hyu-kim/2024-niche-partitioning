@@ -55,11 +55,10 @@ df_fold$Strain <- factor(df_fold$Strain,
                                   'None', 'Marinobacter 3-2'))
 df_fold$Treatment <- factor(df_fold$Treatment, 
                             levels=c('Alcanivorax', 'Devosia',  
-                                     'Marinobacter', 'none')
-                            )
+                                     'Marinobacter', 'none'))
 df_fold$fold_log <- log(df_fold$fold)  # natural log
 df_fold$fold_adj_log <- log(df_fold$fold_adj)
-
+df_fold <- df_fold[(df_fold$Ring!=1 | df_fold$Treatment!='none'),]
 
 
 ## subset abundance on day 14 only
