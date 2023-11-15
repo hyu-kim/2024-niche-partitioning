@@ -1,0 +1,3 @@
+[submodule "r-sparcc"]
+	path = r-sparcc
+	url = https://github.com/MPBA/r-sparcc.git

@@ -26,7 +26,7 @@ df_stat <- df[df$isotope=='c',] %>%
 ggplot() +
   geom_sina(data = df_vis, 
             aes(x=distance, y=value, color=treatment), 
-            maxwidth = 0.7, 
+            maxwidth = 0.8, 
             alpha=0.3, 
             size=0.8) +
   facet_grid(cols = vars(treatment)) +
@@ -36,11 +36,11 @@ ggplot() +
   geom_errorbar(data=df_vis_stat, 
                 aes(x=distance, ymin=q50, ymax=q50),
                 width = 0.3, color='black', size=0.8) + 
-  labs(y = "Carbon net incorporation") +
+  labs(y = "Carbon net incorporation", x = "Location") +
   # ylim(NA, 0.24) +
   # scale_y_continuous(breaks = append(seq(0, 0.09, 0.03), seq(0.10, 0.25, 0.1))) +
   # scale_y_break(c(0.09, 0.10), scales=0.2) +
-  scale_color_manual(values=c("#E06666","#4061f4","#7c4202","#5b5b5b")) +  
+  scale_color_manual(values=c("#E06666","#5E7BFB","#1a6b3b","#878787")) + 
     # Alcani, Devosi, Marino, none
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),

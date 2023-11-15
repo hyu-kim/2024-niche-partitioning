@@ -21,11 +21,10 @@ df_alg$Treatment[df_alg$Treatment==4] <- 'Marinobacter'
 
 
 
-## Compute fold increase, day 5 -- 14
+## FOLD INCREASE day 5 -- 14
 df_fold <- data.frame(matrix(nrow=0, ncol=7))
 colnames(df_fold) <- c('Strain', 'Treatment', 'Microplate', 'Ring', 'Direction',
                        'fold', 'fold_adj')
-
 conds <- c('Treatment', 'Microplate', 'Ring', 'Direction')
 df_cond <- df[,conds]
 
@@ -33,7 +32,6 @@ for(i in 1:nrow(unique(df_cond))){
   ind <- (df$Treatment==df_cond[i,1]) & (df$Microplate==df_cond[i,2]) & 
     (df$Ring==df_cond[i,3]) & (df$Direction==df_cond[i,4])
   df_ext <- df[ind,]
-  
   ind2 <- (df_alg$Treatment==df_cond[i,1]) & (df_alg$Microplate==df_cond[i,2])
   df_alg_ext <- df_alg[ind2,]
   if (length(df_ext[,1])>1){
@@ -53,15 +51,16 @@ for(i in 1:nrow(unique(df_cond))){
 df_fold$Strain <- factor(df_fold$Strain, 
                          levels=c('Devosia EAB7WZ', 'Alcanivorax EA2', 
                                   'None', 'Marinobacter 3-2'))
-df_fold$Treatment <- factor(df_fold$Treatment, 
-                            levels=c('Alcanivorax', 'Devosia',  
-                                     'Marinobacter', 'none'))
+# df_fold$Treatment <- factor(df_fold$Treatment, 
+#                             levels=c('Alcanivorax', 'Devosia',  
+#                                      'Marinobacter', 'none'))
 df_fold$fold_log <- log(df_fold$fold)  # natural log
 df_fold$fold_adj_log <- log(df_fold$fold_adj)
 df_fold <- df_fold[(df_fold$Ring!=1 | df_fold$Treatment!='none'),]
+df_fold <- df_fold[-nrow(df_fold),]
 
 
-## subset abundance on day 14 only
+## SUBSET BY TIMEPOINT
 df14 <- df[df$Time==14,]
 df_alg14 <- df_alg[df_alg$Time==14,]
 df14$Abd_per_alga <- matrix(0, nrow=nrow(df14))
@@ -82,13 +81,11 @@ for(i in 1:nrow(df14_cond_unique)){
   
   df14[ind, 9] <- df14[ind, 8] / df_alg14[ind2, 5]
 }
-df14$Strain <- factor(df14$Strain, 
-                      levels=c('Alcanivorax EA2', 'Devosia EAB7WZ',
-                               'Marinobacter 3-2', 'None'))
+df14$Strain <- factor(df14$Strain, levels=c('Alcanivorax EA2', 'Devosia EAB7WZ',
+                                            'Marinobacter 3-2', 'None'))
 df14$Treatment <- factor(df14$Treatment, levels=c(3,1,4,2))
-df14_se <- summarySE(df14, measurevar = 'Abd_per_alga', groupvars = c('Treatment', 'Ring'))
-
-
+df14_se <- summarySE(df14, measurevar = 'Abd_per_alga', 
+                     groupvars = c('Treatment', 'Ring'))
 
 ## subset day 5
 df5 <- df[df$Time==5,]
