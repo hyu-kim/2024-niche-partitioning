@@ -1,20 +1,15 @@
 library("phyloseq")
 source("r-sparcc/R/sparcc.R")
-library(propr) # version 4.2.6
+library("ggplot2")
+
 
 ## Import and melt phyloseq object
 ps = readRDS("data/hex_16S_phyloseq_enrichment.Rds")
-ps <- subset_samples(ps, CONDITION=='1')
+ps <- subset_samples(ps, CONDITION=='2')
 ps_n = transform_sample_counts(ps, 
                                function(x) 100 * x / sum(x)
                                ) # normalize to scale 0-100
 df = psmelt(ps_n)  # convert to dataframe
-
-## Subset dataframe to contain relevant ASV only
-ind <- (df$OTU=='hex_43') | (df$OTU=='hex_41') | (df$OTU=='hex_60') | 
-  (df$OTU=='hex_126') | (df$OTU=='hex_193') | (df$OTU=='hex_5') | 
-  (df$OTU=='hex_8')
-df_isolates <- df[ind,]
 
 ## Extract OTU table and transpose
 df <- ps_n@otu_table
@@ -50,5 +45,18 @@ for (i in 1:(length(isolates_vec)-1)){
   }
 }
 
+### Plot a correlation heat map
+ggplot(data = cor_isol_df, aes(isolate2, isolate1, fill = cor)) +
+  geom_tile(color = "white") + 
+  geom_text(aes(label=round(cor, digits = 3)), size=3) +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-0.5,0.5), space = "Lab", 
+                       name="SparCC\nCorrelation") +
+  scale_x_discrete(limits=isolates_vec) +
+  scale_y_discrete(limits=isolates_vec) +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1))+
+  coord_fixed()
 
-
+ggsave("figures/figSX_sparCC_Pt-.pdf", width=6, height=5)
