@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import pandas as pd
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def dissect_name(fname):
     fname = fname.split('_')
@@ -50,6 +52,34 @@ def plot_readings(df, strain, colname='od'):
         axes[row].set_title(str(wavelengths[row])+' nm, ' + strain)
     plt.savefig('data/biolog/' + strain + '_' + colname + '.png')
     plt.show()
+
+
+def plot_readings_substrate(df, strain, colname='od'):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set_style('whitegrid')
+    sns.set_context('paper', font_scale = 0.4)
+    substrates = np.unique(df['ID'])
+    
+    # plt.figure(figsize = (12, 24))
+    for p in ['PM1', 'PM2A']:
+        ymax = max(df[(df['wavelength'] == 600) & (df['plate']==p)]['od'])
+        fig, axes = plt.subplots(8, 12, figsize=(18, 12))
+
+        for i in range(96):
+            r = i // 12
+            c = i % 12
+            df_temp = df[(df['wavelength'] == 600)
+                         & (df['plate'] == p) 
+                         & (df['well'] == str(chr(ord('A') + r)) + str(c+1))]
+            sns.lineplot(x = 'time', y = colname, data = df_temp, 
+                        ax = axes[r,c], legend=False)
+            axes[r,c].set_title(p + '_' + str(chr(ord('A') + r)) + str(c+1))
+            axes[r,c].set_ylim([0, ymax])
+
+        plt.savefig('data/biolog/summary/curves/' + strain + '_' + p + '.png', 
+                    dpi=450, bbox_inches='tight')
+        # plt.show()
 
 
 def get_fold_rate(df, strain):
@@ -154,8 +184,10 @@ list_strain.remove('19DW')
 # list_strain.remove('summary_biolog_dye.xlsx')
 # list_strain.remove('~$summary_biolog_dye.xlsx')
 
-df = pd.DataFrame(columns = ['strain', 'plate', 'time', 'well', 
-    'wavelength', 'od'])
+list_strain = ['ARW1R1', '13A', '13C1', '3-2', 'EAB7W2', 'ARW1T']
+
+# df = pd.DataFrame(columns = ['strain', 'plate', 'time', 'well', 
+#     'wavelength', 'od'])
 
 substrates_sum_dict = {
     '3-2': 17,
@@ -187,21 +219,22 @@ fold_threshold_dict = {
 
 for strain in list_strain:
 # for strain in ['ARW7G5Y1']:
-    # print('reading ' + strain + ' ..')
+    print('reading ' + strain + ' ..')
     # df = merge_readings_strain(strain)
     # df = get_fold_rate(df, strain)
     # df.to_csv('data/biolog/reads_merged/' + strain + '.csv', index = False)
-    # df = pd.read_csv('data/biolog/reads_merged/' + strain + '.csv')
+    df = pd.read_csv('data/biolog/reads_merged/' + strain + '.csv')
 
     # df_stat = get_stats(df, strain)
     # df_stat.to_csv('data/biolog/summary/stats/' + strain + '.csv', index = False)
-    df_stat = pd.read_csv('data/biolog/summary/stats/' + strain + '.csv')
+    # df_stat = pd.read_csv('data/biolog/summary/stats/' + strain + '.csv')
     
-    df_stat_filtered = filter_substrate(df_stat, strain)
+    # df_stat_filtered = filter_substrate(df_stat, strain)
     # print('current: ' + str(sum(df_stat_filtered['fold_index'])) + '   target: ' + str(substrates_sum_dict[strain]))
-    df_stat_filtered.to_csv('data/biolog/summary/' + strain + '.csv', index = False)
+    # df_stat_filtered.to_csv('data/biolog/summary/' + strain + '.csv', index = False)
 
     # plot_readings(df, strain)
     # plot_readings(df, strain, colname='fold')
     # plot_readings(df, strain, colname='rate')
+    plot_readings_substrate(df, strain, colname='od')
 print('done')
