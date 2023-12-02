@@ -1,10 +1,9 @@
 detach(package:Rmisc)
 detach(package:plyr)
 library("dplyr")
+source("fig4_pm_count.R")  # Continued from "fig4_pm_count.R"
 
-### Continued from "fig4_pm_count.R"
-# bacteria growth rate
-df_fold$rate <- df_fold$fold_log / 9
+
 df_fold_stat <- df_fold %>%
   group_by(Treatment, Ring) %>%
   summarize(q25 = quantile(rate, probs = 0.25), 

@@ -5,7 +5,23 @@ library("dplyr")
 # detach(package:plyr)
 library("ggbreak")
 
-df <- read.csv(file='data/SIP_all.csv')
+
+get_cnet_df_stat <- function(fileloc='data/SIP_all.csv'){
+  df <- read.csv(file='data/SIP_all.csv')
+  df_stat <- df[df$isotope=='c',] %>%
+    group_by(treatment, distance) %>%
+    summarize(q25 = quantile(value, probs = 0.25), 
+              q50 = quantile(value, probs = 0.5),
+              q75 = quantile(value, probs = 0.75))
+  
+  return(df_stat)
+}
+
+df_stat <- get_cnet_df_stat()
+write.csv(df_stat, 'data/SIP_cnet_summary.csv', row.names=FALSE)
+
+
+# draw figures
 df_vis <- df[(df$isotope=='c')&(df$distance=='outer'),]
 df_vis_stat <- df_vis %>%
   group_by(treatment) %>%
@@ -13,16 +29,6 @@ df_vis_stat <- df_vis %>%
             q50 = quantile(value, probs = 0.5),
             q75 = quantile(value, probs = 0.75))
 
-# export summarized data
-df_stat <- df[df$isotope=='c',] %>%
-  group_by(treatment, distance) %>%
-  summarize(q25 = quantile(value, probs = 0.25), 
-            q50 = quantile(value, probs = 0.5),
-            q75 = quantile(value, probs = 0.75))
-write.csv(df_stat, 'data/SIP_cnet_summary.csv', row.names=FALSE)
-
-
-# draw figures
 ggplot() +
   geom_sina(data = df_vis, 
             aes(x=treatment, y=value, color=treatment), 
@@ -58,7 +64,6 @@ ggsave("figures/SIP_cnet_day14_inner_break.pdf", width = 3, height = 4)
 
 
 # statistical test
-
 kruskal.test(value ~ treatment, data = df_vis)
 pairwise.wilcox.test(df_vis$value, df_vis$treatment, p.adjust.method = "BH")
 
