@@ -1,16 +1,17 @@
 ## Converts count and Cnet into SI indices, compares SI to VB's ECM
-detach(package:Rmisc)
-detach(package:plyr)
+# detach(package:Rmisc)
+# detach(package:plyr)
 library("dplyr")
-library(ggplot2)
-library(scales)
+# library(ggplot2)
+# library(scales)
 source("fig4_pm_count.R")
 
 # import data
 count_df <- get_df()
 count_df_alg <- get_df_alg()
 count_df_fold <- get_df_fold(count_df, count_df_alg)
-cnet_stat_df <- read.csv("data/SIP_cnet_summary.csv")
+cnet_df <- read.csv("data/SIP_cnet_summary.csv")
+ecm_mat <- read.csv("data/lc-ms/ExpectedCompetition.csv", row.names = 1)
 
 # summarize growth rate
 count_df_fold_stat <- count_df_fold %>%
@@ -18,11 +19,29 @@ count_df_fold_stat <- count_df_fold %>%
   summarize(q25 = quantile(rate, probs = 0.25), 
             q50 = quantile(rate, probs = 0.5),
             q75 = quantile(rate, probs = 0.75))
+count_df_fold_stat$Ring[count_df_fold_stat$Ring==1] <- 'inner'
+count_df_fold_stat$Ring[count_df_fold_stat$Ring==2] <- 'outer'
 
-# merbe count and cnet in to df
-count_bact_stat$Ring[count_bact_stat$Ring==1] <- 'inner'
-count_bact_stat$Ring[count_bact_stat$Ring==2] <- 'outer'
-df <- cnet_stat
+
+# extract from ecm matrix
+merged_df <- data.frame(
+  influencer = c('Alcanivorax', 'Devosia', 'Marinobacter'),
+  recipient = c('Marinobacter', 'Marinobacter', 'Marinobacter'),
+  ecm = NA,
+  mu = NA,
+  cnet = NA
+)
+list_strains_ecm = rownames(ecm_mat)
+
+for (i in 1:nrow(merged_df)){
+  r_ecm = grep(merged_df[i, 'recipient'], list_strains_ecm)  # row, recipient
+  c_ecm = grep(merged_df[i, 'influencer'], list_strains_ecm)  # col, influencer
+  merged_df[i, 'ecm'] <- ecm_mat[r_ecm, c_ecm]
+}
+
+# extract count and cnet into merged_df
+##blabla
+df <- cnet_stat_df
 colnames(df) <- c("treatment", "ring", "cnet_q25", "cnet_q50", "cnet_q75")
 df$count_mean <- NA
 df$count_sd <- NA
