@@ -25,58 +25,67 @@ count_df_fold_stat$Ring[count_df_fold_stat$Ring==2] <- 'outer'
 
 # merge ECM, SI from PM
 merged_df <- data.frame(
-  influencer = rep(c('Alcanivorax', 'Devosia', 'Marinobacter'), 3),
+  influencer = rep(c('Alcanivorax', 'Devosia', 'Marinobacter', 'none'), 3),
   recipient = 'Marinobacter',
-  measure = c(rep('ecm', 3), rep('str_mu', 3), rep('str_cnet', 3)),
-  val = NA
+  measure = c(rep('ecm', 4), rep('pm_mu', 4), rep('pm_cnet', 4)),
+  val = 0
 )
 list_strains_ecm = rownames(ecm_mat)
 
 for (i in 1:nrow(merged_df)){
   influencer_i <- merged_df[i, 'influencer']
   
+  if (influencer_i=='none'){
+    next
+  }
+  
   if (merged_df[i, 'measure'] == 'ecm'){
     r_ecm = grep('Marinobacter', list_strains_ecm)  # row, recipient
     c_ecm = grep(influencer_i, list_strains_ecm)  # col, influencer
     merged_df[i, 'val'] <- ecm_mat[r_ecm, c_ecm]
-  } else if (merged_df[i, 'measure'] == 'str_mu') {
+  } else if (merged_df[i, 'measure'] == 'pm_mu') {
     mu_i <- count_df_fold_stat$q50[
       count_df_fold_stat$Treatment==influencer_i & 
         count_df_fold_stat$Ring=='outer'
       ]
-    mu_sm <- count_df_fold_stat$q50[count_df_fold_stat$Treatment=='none']
-    merged_df[i, 'val'] <- -1 + mu_i/mu_sm
+    mu_self <- count_df_fold_stat$q50[
+      count_df_fold_stat$Treatment=='Marinobacter' & 
+        count_df_fold_stat$Ring=='outer'
+      ]
+    mu_0 <- count_df_fold_stat$q50[count_df_fold_stat$Treatment=='none']
+    merged_df[i, 'val'] <- - (mu_i-mu_0) / (mu_self-mu_0)
   } else {
     cnet_i <- cnet_df$q50[cnet_df$treatment==influencer_i & 
                             cnet_df$distance=='outer']
-    cnet_sm <- cnet_df$q50[cnet_df$treatment=='none']
-    merged_df[i, 'val'] <- -1 + cnet_i/cnet_sm
+    cnet_self <- cnet_df$q50[cnet_df$treatment=='Marinobacter' &
+                               cnet_df$distance=='outer']
+    cnet_0 <- cnet_df$q50[cnet_df$treatment=='none']
+    merged_df[i, 'val'] <- - (cnet_i - cnet_0) / (cnet_self - cnet_0)
   }
 }
 
 
 # plot by heat
 setEPS()
-postscript("figures/fig4_heatmap.eps", width = 2.4, height = 1.8)
+postscript("figures/fig6_summary.eps", width = 3.5, height = 3)
 
-ggplot(merged_df, aes(x=influencer, y=measure)) + 
-  geom_tile(aes(fill=val)) + 
-  scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)) +
+ggplot(merged_df, aes(x=influencer, y=-val, color=measure)) + 
+  geom_bar(width = 0.8, stat='identity', position=position_dodge(width=.9), fill='grey95') + 
+  # scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_line(colour = "grey80", linewidth=0.1),
         # panel.grid.minor = element_line(colour = "grey80", linewidth=0.2),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_blank(),
-        legend.position = "right",
+        legend.position = "bottom",
         legend.key.size = unit(3, 'mm'),
         # axis.title.x = element_blank(),
         # axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
         # axis.text.y = element_blank(),
-        text = element_text(size = 4),
-        axis.line = element_line(size = 0.2),
-        axis.ticks = element_blank()
+        text = element_text(size = 7),
+        axis.line = element_line(size = 0.25),
         )
 
 dev.off()
