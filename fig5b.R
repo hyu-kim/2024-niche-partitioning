@@ -77,15 +77,14 @@ for (row in 1:nrow(df)){
     ]
 }
 
-# df$c_incorp <- df$cnet_q50 * df$count_total * df$mass_c
-# df$c_incorp_pt <- df$c_incorp / (df$count_pt * mass[4, 'mass'])
-df$c_incorp <- df$cnet_q50 * df$count_total * 0.07 * 0.75 * df$mass_c / 14 * 1e-6  # new calculation
-  # well vol 70 ul, corr factor 0.75, incub period 14 d
-  # [] [cells ml-1] [ml] [] [fg cell-1] [d-1] [1e-6 ng fg-1] = [ng d-1]
-
 # remove Alcani, microplate 2 from df, confirming with XM
 # df <- df[!(df$treatment=='Alcanivorax' & df$microplate==2),]
 
+
+## 1. Displaying by summing over cell counts
+## (Cnet shouldn't be calculated this way?)
+df$c_incorp <- df$cnet_q50 * df$count_total * df$mass_c
+df$c_incorp_pt <- df$c_incorp / (df$count_pt * mass[4, 'mass'])
 # plot, display every replicate
 pdf("figures/fig5b.pdf", width = 2.5, height = 2)
 
@@ -121,6 +120,11 @@ ggplot(df, aes(x=microplate,
 dev.off()
 
 
+## 2. Displaying by estimate total carbon per day
+# well vol 70 ul, corr factor 0.75, incub period 14 d
+df$c_incorp <- df$cnet_q50 * df$count_total * 0.07 * 0.75 * df$mass_c / 14 * 1e-6
+# [] [cells ml-1] [ml] [] [fg cell-1] [d-1] [1e-6 ng fg-1] = [ng d-1]
+
 # plot, average over microplates
 df_summ <- df %>%
   group_by(treatment, ring) %>%
@@ -131,7 +135,7 @@ df_summ <- df %>%
     c_incorp_sd = sd(c_incorp)
   )
 
-pdf("figures/fig5b_jgi.pdf", width = 5, height = 4)
+pdf("figures/fig5b_v2.pdf", width = 5, height = 4)
 
 df_summ %>% mutate(SD = c_incorp_sd) %>%
   # mutate(Cell_Type = factor(Cell_Type, levels = c("B cell","Endothelial","Islets of Langerhans","Tumor","Macrophage","T cell","Fibroblast"))) %>%
@@ -143,7 +147,7 @@ df_summ %>% mutate(SD = c_incorp_sd) %>%
   geom_errorbar(aes(ymin = SDPos-SD, ymax = SDPos+SD), width = 0.1, position = "identity") +
   scale_alpha_discrete(range=c(0.3, 1)) +
   scale_fill_manual(values=c("#E06666", "#4061f4", "#AB7942", "#5b5b5b")) +  # Alcani, Devosi, Marino, none
-  ylab('net carbon drawdown (ng C d-1)') +
+  ylab('carbon mass incorporation rate (ng C d-1)') +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
