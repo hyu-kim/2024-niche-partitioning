@@ -81,10 +81,12 @@ def get_read_df_v2(strain):
     return df
 
 
-# obtain list of strains
-# list_strain_v1 = ['ARW1R1', '13A', '13C1', '3-2', 'EAB7W2', 'ARW1T']
-list_strain_v1 = ['3-2', 'ARW1T']
-list_strain_v2 = ['13M1']
+## obtain list of strains
+## list of strains 
+## v1 = ['ARW1R1', '13A', '13C1', '3-2', 'ARW1T']
+## v2 = ['EA2', '13M1', 'EAB7WZ']
+list_strain_v1 = ['ARW1R1']
+list_strain_v2 = ['EAB7WZ']
 ind_df = pd.read_csv('data/biolog/' + 'summary_biolog_od.csv')
 
 for strain in list_strain_v2:
