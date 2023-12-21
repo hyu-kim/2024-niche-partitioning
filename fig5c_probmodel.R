@@ -36,15 +36,24 @@ summarize_peak <- function(features_mat){
 }
 
 
-uptake_prob_mat <- data.frame(matrix(nrow=0, ncol=))
-colnames(uptake_prob_df) <- c('strain', 'feature', 'P')
-list_strains <- unique(features_df_stat$strain)
-list_features <- unique(features_df_stat$feature)
-peak_control <- features_df_stat[features_df_stat$strain=='abiotic',]
-for (strain in list_strains){
-  peak_strain <- features_df_stat[features_df_stat$strain==strain,]
+get_uptake_prob <- function(peak_mean){
+  uptake_prob <- peak_mean
+  uptake_prob[,] <- 0
+  
+  list_strains <- unique(rownames(peak_mean))
+  list_features <- unique(colnames(peak_mean))
+  
+  peak_control <- peak_mean['abiotic',]
+  peak_control <- matrix(rep(peak_control, length(list_strains)), nrow=length(peak_control))
+  peak_control <- t(peak_control)
+  
+  uptake_prob <- (peak_control>peak_mean) * (peak_control-peak_mean) / peak_control
+    # reconciliate if this is a correct way to infer probability
+    # noting that this is susceptible when there is a false positive in at least one of abiotic control samples
+  
+  return(uptake_prob)
 }
-
-
-features_mat <- read.csv("data/lc-ms/peakheights.csv", row.names = 1)
-features_mat_mean <- summarize_peak(features_mat)
+  
+peak_mat <- read.csv("data/lc-ms/peakheights.csv", row.names = 1)
+peak_mean <- summarize_peak(peak_mat)
+uptake_prob <- get_uptake_prob(peak_mean)
