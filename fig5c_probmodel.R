@@ -1,7 +1,34 @@
 ### Estimates carbon distribution from VB's metabolomics
 # 1. import cell count
 source("fig4_pm_count.R")
+
+get_number_ratio <- function(count_df){
+  res_df <- data.frame(matrix(nrow=0, ncol=6))
+  colnames(res_df) <- c('Treatment', 'Microplate', 'Direction', 'val1', 'val2', 'ratio')
+  list_treatments <- unique(count_df$Treatment)
+  
+  for (trt in list_treatments){
+    # if (trt=='none')
+    #   next
+    for (mic in seq(3)){
+      for (dir in c(1,3,5)){
+        inds <- (count_df$Treatment==trt)&(count_df$Microplate==mic)&(count_df$Direction==dir)
+        if (sum(inds) < 2)
+          next
+        val1 <- count_df$Abundance[inds & count_df$Ring==1] # influencer
+        val2 <- count_df$Abundance[inds & count_df$Ring==2] # recipient
+        
+        res_df[nrow(res_df)+1, ] <- 
+          data.frame(Treatment = trt, Microplate = mic, Direction = dir,
+                     val1 = val1, val2 = val2, ratio = val2 / val1)
+      }
+    }
+  }
+  return(res_df)
+}
+
 count_df <- get_df()
+count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
 
 # 2. get probability matrix
 detach(package:Rmisc)
