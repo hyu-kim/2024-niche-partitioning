@@ -1,6 +1,8 @@
 ### Estimates carbon distribution from VB's metabolomics
-# 1. import cell count
 source("fig4_pm_count.R")
+detach(package:Rmisc)
+detach(package:plyr)
+library("dplyr")
 
 get_number_ratio <- function(count_df){
   res_df <- data.frame(matrix(nrow=0, ncol=6))
@@ -27,13 +29,6 @@ get_number_ratio <- function(count_df){
   return(res_df)
 }
 
-count_df <- get_df()
-count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
-
-# 2. get probability matrix
-detach(package:Rmisc)
-detach(package:plyr)
-library("dplyr")
 
 summarize_peak <- function(features_mat){
   list_samples <- rownames(features_mat)
@@ -80,7 +75,15 @@ get_uptake_prob <- function(peak_mean){
   
   return(uptake_prob)
 }
-  
+
+
+# 1. import cell count
+count_df <- get_df()
+count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
+
+# 2. get probability matrix
 peak_mat <- read.csv("data/lc-ms/peakheights.csv", row.names = 1)
 peak_mean <- summarize_peak(peak_mat)
 uptake_prob <- get_uptake_prob(peak_mean)
+
+# 3. get DOM concentration
