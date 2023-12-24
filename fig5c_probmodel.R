@@ -77,6 +77,29 @@ get_uptake_prob <- function(peak_mean){
 }
 
 
+get_distribute_ratio <- function(count_ratio, uptake_prob, exudates_ratio){
+  uptake_sums<- rowSums(uptake_prob)
+  res_df <- count_ratio[,c('Treatment', 'Microplate', 'Direction', 'ratio')]
+  colnames(res_df) <- c('Treatment', 'Microplate', 'Direction', 'count_r')
+                        # 'uptake_r', 'exudates_r', 'total_r')
+  for (t in unique(res_df$Treatment)){
+    if (t == 'none')
+      next
+    res_df$uptake_r[res_df$Treatment==t] <- uptake_sums['Marinobacter'] / uptake_sums[t]
+  }
+  
+  res_df$exudates_r <- exudates_ratio
+  res_df$total_r <- res_df$count_r * res_df$uptake_r * res_df$exudates_r
+  
+  res_df_stat <- res_df %>%
+    group_by(Treatment) %>%
+    summarize(geomean = exp(mean(log(total_r))),
+              geosd = exp(sd(log(total_r))))
+  
+  return(list("df" = res_df, "df_stat" = res_df_stat))
+}
+
+
 # 1. import cell count
 count_df <- get_df()
 count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
@@ -85,5 +108,11 @@ count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
 peak_mat <- read.csv("data/lc-ms/peakheights.csv", row.names = 1)
 peak_mean <- summarize_peak(peak_mat)
 uptake_prob <- get_uptake_prob(peak_mean)
+uptake_sums<- rowSums(uptake_prob)
 
 # 3. get DOM concentration
+exudates_df <- read.csv("data/lc-ms/MicroplateDOM.csv", row.names = 1)
+exudates_ratio <- exudates_df['14','outer'] / exudates_df['14','inner']
+
+# 4. combine three estimations
+distributions_ratio <- get_distribute_ratio(count_ratio, uptake_prob, exudates_ratio)$df
