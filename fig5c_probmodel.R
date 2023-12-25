@@ -12,7 +12,9 @@ get_number_ratio <- function(count_df){
   for (trt in list_treatments){
     # if (trt=='none')
     #   next
-    for (mic in seq(3)){
+    for (mic in seq(6)){
+      if (!length(count_df[count_df$Treatment==trt & count_df$Microplate==mic,]))
+        next
       for (dir in c(1,3,5)){
         inds <- (count_df$Treatment==trt)&(count_df$Microplate==mic)&(count_df$Direction==dir)
         if (sum(inds) < 2)
@@ -92,27 +94,37 @@ get_distribute_ratio <- function(count_ratio, uptake_prob, exudates_ratio){
   res_df$total_r <- res_df$count_r * res_df$uptake_r * res_df$exudates_r
   
   res_df_stat <- res_df %>%
-    group_by(Treatment) %>%
-    summarize(geomean = exp(mean(log(total_r))),
-              geosd = exp(sd(log(total_r))))
+    group_by(Treatment, Microplate) %>%
+    summarize(
+      totalmean = mean(total_r),
+      totalsd = sd(total_r)
+      # geomean = exp(mean(log(total_r))),
+      # geosd = exp(sd(log(total_r)))
+      )
   
   return(list("df" = res_df, "df_stat" = res_df_stat))
 }
 
 
-# 1. import cell count
-count_df <- get_df()
-count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
-
-# 2. get probability matrix
-peak_mat <- read.csv("data/lc-ms/peakheights.csv", row.names = 1)
-peak_mean <- summarize_peak(peak_mat)
-uptake_prob <- get_uptake_prob(peak_mean)
-uptake_sums<- rowSums(uptake_prob)
-
-# 3. get DOM concentration
-exudates_df <- read.csv("data/lc-ms/MicroplateDOM.csv", row.names = 1)
-exudates_ratio <- exudates_df['14','outer'] / exudates_df['14','inner']
-
-# 4. combine three estimations
-distributions_ratio <- get_distribute_ratio(count_ratio, uptake_prob, exudates_ratio)$df
+get_distributions <- function(peak_loc="data/lc-ms/peakheights.csv", 
+                              DOM_loc="data/lc-ms/MicroplateDOM.csv"){
+  # 1. import cell count
+  count_df <- get_df()
+  count_ratio <- get_number_ratio(count_df[count_df$Time==14,])
+  
+  # 2. get probability matrix
+  peak_mat <- read.csv(peak_loc, row.names = 1)
+  peak_mean <- summarize_peak(peak_mat)
+  uptake_prob <- get_uptake_prob(peak_mean)
+  uptake_sums<- rowSums(uptake_prob)
+  
+  # 3. get DOM concentration
+  exudates_df <- read.csv(DOM_loc, row.names = 1)
+  exudates_ratio <- exudates_df['14','outer'] / exudates_df['14','inner']
+  
+  # 4. combine three estimations
+  distributions_ratio <- get_distribute_ratio(
+    count_ratio, uptake_prob, exudates_ratio)$df_stat
+  
+  return(distributions_ratio)
+}

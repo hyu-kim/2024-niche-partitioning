@@ -1,4 +1,4 @@
-## Combines count, Cnet, biovolume in one plot (day 14)
+## Combines count, Cnet, biovolume (day 14)
 library("dplyr")
 library(ggplot2)
 library(scales)
@@ -81,43 +81,6 @@ for (row in 1:nrow(df)){
 # df <- df[!(df$treatment=='Alcanivorax' & df$microplate==2),]
 
 
-## 1. Displaying by summing over cell counts
-## (Cnet shouldn't be calculated this way?)
-df$c_incorp <- df$cnet_q50 * df$count_total * df$mass_c
-df$c_incorp_pt <- df$c_incorp / (df$count_pt * mass[4, 'mass'])
-# plot, display every replicate
-pdf("figures/fig5b.pdf", width = 2.5, height = 2)
-
-ggplot(df, aes(x=microplate, 
-               y=c_incorp_pt, 
-               fill=treatment, 
-               alpha=factor(ring, levels=c("outer","inner"))
-               )
-       ) + 
-  geom_bar(stat = 'identity', position = 'stack', color='black', size=0.2) +
-  facet_grid(~factor(treatment, 
-                     levels=c('Devosia', 'Marinobacter', 'Alcanivorax', 'none')
-                     )) +
-  # geom_text(aes(label=round(c_incorp_pt, digits = 4)), vjust=0.5, alpha=1) +
-  scale_fill_manual(values=c("#E06666", "#4061f4", "#AB7942", "#5b5b5b")) +  # Alcani, Devosi, Marino, none
-  scale_alpha_discrete(range=c(0.3, 1)) +
-  theme(strip.background = element_rect(fill=NA),
-        panel.background = element_rect(fill = "transparent", color = NA),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.border = element_blank(),
-        legend.position = "None",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.line = element_line(size = 0.2),
-        strip.text.x = element_blank()
-        # axis.ticks = element_blank()
-        )
-
-dev.off()
 
 
 ## 2. Displaying by estimate total carbon per day
@@ -138,7 +101,6 @@ df_summ <- df %>%
 pdf("figures/fig5b_v2.pdf", width = 5, height = 4)
 
 df_summ %>% mutate(SD = c_incorp_sd) %>%
-  # mutate(Cell_Type = factor(Cell_Type, levels = c("B cell","Endothelial","Islets of Langerhans","Tumor","Macrophage","T cell","Fibroblast"))) %>%
   group_by(treatment) %>%
   mutate(SDPos = cumsum(c_incorp_mean)) %>%
   ggplot(aes(x = treatment, y = c_incorp_mean, fill = treatment, alpha=factor(ring, levels=c("outer","inner")))) +
@@ -164,3 +126,40 @@ df_summ %>% mutate(SD = c_incorp_sd) %>%
   )
 
 dev.off()
+
+
+## By normalizing with Pt cell number (depreciated)
+# df$c_incorp <- df$cnet_q50 * df$count_total * df$mass_c
+# df$c_incorp_pt <- df$c_incorp / (df$count_pt * mass[4, 'mass'])
+# 
+# pdf("figures/fig5b.pdf", width = 2.5, height = 2)
+# 
+# ggplot(df, aes(x=microplate, 
+#                y=c_incorp_pt, 
+#                fill=treatment, 
+#                alpha=factor(ring, levels=c("outer","inner"))
+#                )
+#        ) + 
+#   geom_bar(stat = 'identity', position = 'stack', color='black', size=0.2) +
+#   facet_grid(~factor(treatment, 
+#                      levels=c('Devosia', 'Marinobacter', 'Alcanivorax', 'none')
+#                      )) +
+#   scale_fill_manual(values=c("#E06666", "#4061f4", "#AB7942", "#5b5b5b")) +  # Alcani, Devosi, Marino, none
+#   scale_alpha_discrete(range=c(0.3, 1)) +
+#   theme(strip.background = element_rect(fill=NA),
+#         panel.background = element_rect(fill = "transparent", color = NA),
+#         panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         plot.background = element_rect(fill = "transparent", color = NA),
+#         panel.border = element_blank(),
+#         legend.position = "None",
+#         axis.title.x = element_blank(),
+#         axis.title.y = element_blank(),
+#         axis.text.x = element_blank(),
+#         axis.text.y = element_blank(),
+#         axis.line = element_line(size = 0.2),
+#         strip.text.x = element_blank()
+#         # axis.ticks = element_blank()
+#         )
+# 
+# dev.off()
