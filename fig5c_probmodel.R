@@ -16,7 +16,8 @@ get_number_ratio <- function(count_df){
       if (!length(count_df[count_df$Treatment==trt & count_df$Microplate==mic,]))
         next
       for (dir in c(1,3,5)){
-        inds <- (count_df$Treatment==trt)&(count_df$Microplate==mic)&(count_df$Direction==dir)
+        inds <- (count_df$Treatment==trt)&
+          (count_df$Microplate==mic)&(count_df$Direction==dir)
         if (sum(inds) < 2)
           next
         val1 <- count_df$Abundance[inds & count_df$Ring==1] # influencer
@@ -68,12 +69,14 @@ get_uptake_prob <- function(peak_mean){
   list_features <- unique(colnames(peak_mean))
   
   peak_control <- peak_mean['abiotic',]
-  peak_control <- matrix(rep(peak_control, length(list_strains)), nrow=length(peak_control))
+  peak_control <- 
+    matrix(rep(peak_control, length(list_strains)), nrow=length(peak_control))
   peak_control <- t(peak_control)
   
   uptake_prob <- (peak_control>peak_mean) * (peak_control-peak_mean) / peak_control
     # reconciliate if this is a correct way to infer probability
-    # noting that this is susceptible when there is a false positive in at least one of abiotic control samples
+    # note that this is susceptible when there is a false positive in at least 
+    # one of abiotic control samples
   
   return(uptake_prob)
 }
@@ -87,7 +90,8 @@ get_distribute_ratio <- function(count_ratio, uptake_prob, exudates_ratio){
   for (t in unique(res_df$Treatment)){
     if (t == 'none')
       next
-    res_df$uptake_r[res_df$Treatment==t] <- uptake_sums['Marinobacter'] / uptake_sums[t]
+    res_df$uptake_r[res_df$Treatment==t] <- 
+      uptake_sums['Marinobacter'] / uptake_sums[t]
   }
   
   res_df$exudates_r <- exudates_ratio
@@ -123,8 +127,53 @@ get_distributions <- function(peak_loc="data/lc-ms/peakheights.csv",
   exudates_ratio <- exudates_df['14','outer'] / exudates_df['14','inner']
   
   # 4. combine three estimations
-  distributions_ratio <- get_distribute_ratio(
-    count_ratio, uptake_prob, exudates_ratio)$df_stat
+  distributions_ratio_list <- get_distribute_ratio(
+    count_ratio, uptake_prob, exudates_ratio)
   
-  return(distributions_ratio)
+  return(distributions_ratio_list)
+}
+
+
+get_ratio_df <- function(){
+  # Summarize distrib_ratio, compare with total incorporation ratio
+  source("fig5b.R")
+  
+  distributions_ratio <- get_distributions()$df
+  distrib_ratio_summ <- distributions_ratio %>%
+    group_by(Treatment, Microplate) %>%
+    summarize(
+      ratio_mean = mean(total_r),
+      ratio_sd = sd(total_r),
+      n = n()
+    )
+  
+  total_incorp <- get_total_incorp_df()$df
+  total_incorp_ratio <- data.frame(matrix(nrow=0, ncol=6))
+  colnames(total_incorp_ratio) <- 
+    c('Treatment', 'Microplate', 'incorp_ratio', 'pred_mean', 'pred_sd', 'n')
+  
+  for (t in unique(total_incorp$treatment)){
+    if (t == 'none')
+      next
+    for (m in seq(3)){
+      total_incorp_sub <- 
+        total_incorp[total_incorp$treatment==t & total_incorp$microplate==m,]
+      distrib_ratio_sub <- distrib_ratio_summ[
+        distrib_ratio_summ$Treatment==t & distrib_ratio_summ$Microplate==m,]
+      if (nrow(total_incorp_sub) < 2)
+        next
+      total1 <- total_incorp_sub$c_incorp[total_incorp_sub$ring=='inner']
+      total2 <- total_incorp_sub$c_incorp[total_incorp_sub$ring=='outer']
+      total_ratio <- total2 / total1
+      pred_mean <- distrib_ratio_sub$ratio_mean[1]
+      pred_sd <- distrib_ratio_sub$ratio_sd[1]
+      n <- distrib_ratio_sub$n[1]
+      
+      total_incorp_ratio[nrow(total_incorp_ratio)+1, ] <- 
+        data.frame(Treatment = t, Microplate = m, incorp_ratio = total_ratio,
+                   pred_mean = pred_mean, pred_sd = pred_sd, n = n)
+    }
+  }
+  
+  return(total_incorp_ratio)
 }
