@@ -184,7 +184,7 @@ list_strain.remove('19DW')
 # list_strain.remove('summary_biolog_dye.xlsx')
 # list_strain.remove('~$summary_biolog_dye.xlsx')
 
-list_strain = ['ARW1R1', '13A', '13C1', '3-2', 'EAB7W2', 'ARW1T']
+list_strain = ['N5S']
 
 # df = pd.DataFrame(columns = ['strain', 'plate', 'time', 'well', 
 #     'wavelength', 'od'])

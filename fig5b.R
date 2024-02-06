@@ -86,7 +86,8 @@ get_total_incorp_df <- function(){
   
   ## Display by estimate total carbon per day
   # well vol 70 ul, corr factor 0.75, incub period 14 d
-  # [] [cells ml-1] [ml] [] [fg cell-1] [d-1] [1e-6 ng fg-1] = [ng d-1]
+  # [%] [cells ml-1] [ml] [] [fg cell-1] [d-1] [1e-6 ng fg-1] = [ng d-1]
+  # corr factor accounts for the volume decrease on day 5
   df$c_incorp <- df$cnet_q50 * df$count_total * 0.07 * 0.75 * df$mass_c / 14 * 1e-6
   
   df_summ <- df %>%

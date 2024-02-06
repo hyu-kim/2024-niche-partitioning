@@ -86,7 +86,7 @@ def get_read_df_v2(strain):
 ## v1 = ['ARW1R1', '13A', '13C1', '3-2', 'ARW1T']
 ## v2 = ['EA2', '13M1', 'EAB7WZ']
 list_strain_v1 = ['ARW1R1']
-list_strain_v2 = ['EAB7WZ']
+list_strain_v2 = ['N2S']
 ind_df = pd.read_csv('data/biolog/' + 'summary_biolog_od.csv')
 
 for strain in list_strain_v2:
@@ -99,6 +99,7 @@ for strain in list_strain_v2:
     df = pd.read_csv('data/biolog/reads_merged/' + strain + '_v2.csv')
 
     print('    plotting ' + strain + ' ..')
+    # plot_readings_substrate(df, strain, colname='od', version='v2', ind_df=None)
     plot_readings_substrate(df, strain, colname='od', version='v2', ind_df=ind_df)
 
 print('done')
