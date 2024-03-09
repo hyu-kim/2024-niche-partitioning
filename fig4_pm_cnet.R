@@ -10,38 +10,46 @@ get_cnet_df_stat <- function(fileloc='data/SIP_all.csv'){
   df <- read.csv(file='data/SIP_all.csv')
   df_stat <- df[df$isotope=='c',] %>%
     group_by(treatment, distance) %>%
-    summarize(q25 = quantile(value, probs = 0.25), 
+    summarize(q25 = quantile(value, probs = 0.25),
               q50 = quantile(value, probs = 0.5),
               q75 = quantile(value, probs = 0.75))
-  
+
   return(df_stat)
 }
 
 df_stat <- get_cnet_df_stat()
 write.csv(df_stat, 'data/SIP_cnet_summary.csv', row.names=FALSE)
 
+cnet <- read.csv("data/SIP_cnet_v2.csv")
+cnet <- cnet[cnet$Cnet>0,]
+cnet_info <- read.csv("data/SIP_sample_info.csv")
+cnet_append <- append_cnet(cnet, cnet_info)
+cnet_outer <- cnet_append[(cnet_append$ring=='outer'),]
+cnet_outer_stat <- cnet_outer %>%
+   group_by(treatment, ring) %>%
+   summarize(q25 = quantile(Cnet, probs = 0.25),
+             q50 = quantile(Cnet, probs = 0.5),
+             q75 = quantile(Cnet, probs = 0.75),
+             n = n(),
+             max = max(Cnet)
+   )
+
+
 
 # draw figures
-df_vis <- df[(df$isotope=='c')&(df$distance=='outer'),]
-df_vis_stat <- df_vis %>%
-  group_by(treatment) %>%
-  summarize(q25 = quantile(value, probs = 0.25), 
-            q50 = quantile(value, probs = 0.5),
-            q75 = quantile(value, probs = 0.75))
-
 ggplot() +
-  geom_sina(data = df_vis, 
-            aes(x=treatment, y=value, color=treatment), 
+  geom_sina(data = cnet_outer, 
+            aes(x=treatment, y=Cnet, color=treatment), 
             maxwidth = 0.5, 
             alpha=0.3, 
             size=1) +
-  geom_errorbar(data=df_vis_stat, 
+  geom_errorbar(data=cnet_outer_stat, 
                 aes(x=treatment, ymin=q25, ymax=q75),
                 width = 0.15, color='black', size=0.4) + 
-  geom_errorbar(data=df_vis_stat, 
+  geom_errorbar(data=cnet_outer_stat, 
                 aes(x=treatment, ymin=q50, ymax=q50),
                 width = 0.3, color='black', size=0.8) + 
-  labs(x = "Isolate in inner", y = "Incorporation by net") +
+  labs(x = "Isolate in inner", y = "Cnet") +
   ylim(NA, 0.24) +
   scale_y_continuous(breaks = append(seq(0, 0.09, 0.03), seq(0.10, 0.25, 0.1))) +
   scale_y_break(c(0.09, 0.10), scales=0.2) +
@@ -59,13 +67,13 @@ ggplot() +
         axis.line.y.right = element_blank()
         )
 
-ggsave("figures/SIP_cnet_day14_outer_break.pdf", width = 3, height = 4)
+ggsave("figures/SIP_cnet_day14_outer_break_v2.pdf", width = 3, height = 4)
 ggsave("figures/SIP_cnet_day14_inner_break.pdf", width = 3, height = 4)
 
 
 # statistical test
-kruskal.test(value ~ treatment, data = df_vis)
-pairwise.wilcox.test(df_vis$value, df_vis$treatment, p.adjust.method = "BH")
+kruskal.test(Cnet ~ treatment, data = cnet_outer)
+pairwise.wilcox.test(cnet_outer$Cnet, cnet_outer$treatment, p.adjust.method = "BH")
 
 print(
   cat(

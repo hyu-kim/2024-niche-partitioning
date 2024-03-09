@@ -66,7 +66,7 @@ merge_count_cnet <- function(count_bact_stat, cnet_stat){
 # import and clean data
 count_bact <- read.csv("data/flow2_day14_bact.csv")
 count_pt <- read.csv("data/flow2_day14_pt.csv")
-cnet <- read.csv("data/SIP_cnet.csv")
+cnet <- read.csv("data/SIP_cnet_v2.csv")
 cnet <- cnet[cnet$Cnet>0,]
 cnet_info <- read.csv("data/SIP_sample_info.csv")
 
@@ -88,7 +88,7 @@ setEPS()
 # postscript("figures/fig5a_lagend.eps", width = 6, height = 6)
 postscript("figures/fig5a.eps", width = 1.6, height = 1.6)
 
-ggplot(merged_stat, aes(x=cnet_q50, y=count_mean, colour=treatment)) + 
+ggplot(merged_stat[merged_stat$ring=='inner',], aes(x=cnet_q50, y=count_mean, colour=treatment)) + 
   geom_point(aes(size=n_cnet, fill=treatment, shape=ring), stroke=0.5) + 
   geom_errorbar(aes(ymax = count_mean+count_sd, ymin = count_mean-count_sd), width=0, linewidth=0.1) + 
   geom_errorbarh(aes(xmax = cnet_q75, xmin = cnet_q25), height=0, linewidth=0.1) + 
@@ -127,15 +127,15 @@ dev.off()
 merged_stat_outer <- merged_stat[merged_stat$ring=='outer',]
 
 setEPS()
-postscript("figures/fig5a_inset.eps", width = 1.6, height = 0.5)
+postscript("figures/fig5b_v2.eps", width = 1.6, height = 1.6)
 
 ggplot(merged_stat_outer, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treatment)) + 
   geom_point(aes(size=n_cnet, fill=treatment, shape=ring), stroke=0.5) + 
-  # geom_errorbar(aes(ymax = count_mean+count_sd, ymin = count_mean-count_sd), width=0, linewidth=0.1) + 
-  # geom_errorbarh(aes(xmax = cnet_q75, xmin = cnet_q25), height=0, linewidth=0.1) + 
-  scale_y_continuous(limits = c(0, 12e6), breaks=seq(0, 12e6, 6e6)) +
-  scale_x_continuous(limits = c(0.015, 0.05), breaks=seq(0.02, 0.05, 0.01)) +
-  scale_size(range = c(0.5, 2)) +
+  geom_errorbar(aes(ymax = count_mean+count_sd, ymin = count_mean-count_sd), width=0, linewidth=0.1) +
+  geom_errorbarh(aes(xmax = cnet_q75, xmin = cnet_q25), height=0, linewidth=0.1) +
+  # scale_y_continuous(limits = c(0, 12e6), breaks=seq(0, 12e6, 4e6)) +
+  # scale_x_continuous(limits = c(0.015, 0.05), breaks=seq(0.02, 0.05, 0.01)) +
+  scale_size(range = c(1, 2.5)) +
   scale_color_manual(values=c("#C00000", "#0432FF", "#AB7942", "#000000")) +
   scale_fill_manual(values=c("#FFDFE1", "#D2DCFB", "#F8DFC4", "#ffffff")) +
   # scale_fill_manual(values=c("#FFDFE1", "#D2DCFB", "#F8DFC4", "#D1D3D4")) +
@@ -143,17 +143,17 @@ ggplot(merged_stat_outer, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treat
   scale_shape_manual(values = c(21)) +  # Inner, outer
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
-        panel.grid.major = element_blank(),
+        # panel.grid.major = element_blank(),
         # panel.grid.minor = element_line(colour = "grey80", linewidth=0.2),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_blank(),
-        legend.position = "None",
+        legend.position = "none",
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.line = element_line(size = 0.15)
-        # axis.ticks = element_line(size = 0.15)
+        # axis.text.x = element_blank(),
+        # axis.text.y = element_blank(),
+        axis.line = element_line(size = 0.15),
+        axis.ticks = element_line(size = 0.15)
   )
 
 dev.off()
