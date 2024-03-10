@@ -4,21 +4,8 @@ library(ggforce)
 library("dplyr")
 # detach(package:plyr)
 library("ggbreak")
+source('fig_s_cnet_global.R')
 
-
-get_cnet_df_stat <- function(fileloc='data/SIP_all.csv'){
-  df <- read.csv(file='data/SIP_all.csv')
-  df_stat <- df[df$isotope=='c',] %>%
-    group_by(treatment, distance) %>%
-    summarize(q25 = quantile(value, probs = 0.25),
-              q50 = quantile(value, probs = 0.5),
-              q75 = quantile(value, probs = 0.75))
-
-  return(df_stat)
-}
-
-df_stat <- get_cnet_df_stat()
-write.csv(df_stat, 'data/SIP_cnet_summary.csv', row.names=FALSE)
 
 cnet <- read.csv("data/SIP_cnet_v2.csv")
 cnet <- cnet[cnet$Cnet>0,]
@@ -33,7 +20,6 @@ cnet_outer_stat <- cnet_outer %>%
              n = n(),
              max = max(Cnet)
    )
-
 
 
 # draw figures

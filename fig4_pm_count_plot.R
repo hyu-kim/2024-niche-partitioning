@@ -1,14 +1,18 @@
-detach(package:Rmisc)
-detach(package:plyr)
 library("dplyr")
 source("fig4_pm_count.R")  # Continued from "fig4_pm_count.R"
+detach(package:Rmisc)
+detach(package:plyr)
 
+
+df_fold <- get_df_fold(get_df(), get_df_alg())
 
 df_fold_stat <- df_fold %>%
   group_by(Treatment, Ring) %>%
   summarize(q25 = quantile(rate, probs = 0.25), 
             q50 = quantile(rate, probs = 0.5),
-            q75 = quantile(rate, probs = 0.75))
+            q75 = quantile(rate, probs = 0.75),
+            n = n()
+            )
 
 
 ##### PLOT GROWTH RATE
@@ -61,20 +65,20 @@ df_fold_vis <- df_fold[df_fold$Ring==2,]
 df_fold_stat_vis <- df_fold_stat[df_fold_stat$Ring==2,]
 
 setEPS()
-postscript("figures/fig4_rate_outer.eps", width = 2.75, height = 1.4)
+postscript("figures/fig4_rate_outer_v2.eps", width = 3, height = 4)
 
 ggplot() +
   geom_sina(data = df_fold_vis, 
             aes(Treatment, rate, color=Treatment),
             scale = 'width',
-            size=1.2,
-            maxwidth = 0.45) +
+            size=1.5,
+            maxwidth = 0.45, shape=21, fill="white", stroke=0.5) +
   geom_errorbar(data=df_fold_stat_vis, 
-                aes(x=Treatment, ymin=q25, ymax=q75, color=Treatment),
-                width = 0.15, size=0.4) + 
+                aes(x=Treatment, ymin=q25, ymax=q75),
+                width = 0.15, size=0.4, color='black') + 
   geom_errorbar(data=df_fold_stat_vis, 
-                aes(x=Treatment, ymin=q50, ymax=q50, color=Treatment),
-                width = 0.3, size=0.8) + 
+                aes(x=Treatment, ymin=q50, ymax=q50),
+                width = 0.3, size=0.8, color='black') + 
   scale_color_manual(values=c("#E06666","#5E7BFB","#1a6b3b","#878787")) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
