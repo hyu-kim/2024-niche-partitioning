@@ -1,4 +1,4 @@
-source("fig5b.R")
+source("fig5c.R")
 
 df_summ <- get_total_incorp_df()$df_summ
 
