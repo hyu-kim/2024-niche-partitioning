@@ -86,7 +86,7 @@ merged_stat <- merge_count_cnet(count_bact_stat, cnet_stat)
 # plot
 setEPS()
 # postscript("figures/fig5a_lagend.eps", width = 6, height = 6)
-postscript("figures/fig5a.eps", width = 1.6, height = 1.6)
+postscript("figures/fig5a_v2.eps", width = 1.6, height = 1.6)
 
 ggplot(merged_stat[merged_stat$ring=='inner',], aes(x=cnet_q50, y=count_mean, colour=treatment)) + 
   geom_point(aes(size=n_cnet, fill=treatment, shape=ring), stroke=0.5) + 
@@ -123,17 +123,17 @@ ggplot(merged_stat[merged_stat$ring=='inner',], aes(x=cnet_q50, y=count_mean, co
 dev.off()
 
 
-# plot for each ring
+# plot outer ring
 merged_stat_outer <- merged_stat[merged_stat$ring=='outer',]
 
 setEPS()
-postscript("figures/fig5b_v2.eps", width = 1.6, height = 1.6)
+postscript("figures/fig5b_v3.eps", width = 1.6, height = 1.6)
 
 ggplot(merged_stat_outer, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treatment)) + 
   geom_point(aes(size=n_cnet, fill=treatment, shape=ring), stroke=0.5) + 
   geom_errorbar(aes(ymax = count_mean+count_sd, ymin = count_mean-count_sd), width=0, linewidth=0.1) +
   geom_errorbarh(aes(xmax = cnet_q75, xmin = cnet_q25), height=0, linewidth=0.1) +
-  # scale_y_continuous(limits = c(0, 12e6), breaks=seq(0, 12e6, 4e6)) +
+  scale_y_continuous(limits = c(0, 12.5e6), breaks=seq(0, 12e6, 4e6)) +
   # scale_x_continuous(limits = c(0.015, 0.05), breaks=seq(0.02, 0.05, 0.01)) +
   scale_size(range = c(1, 2.5)) +
   scale_color_manual(values=c("#C00000", "#0432FF", "#AB7942", "#000000")) +
@@ -150,8 +150,8 @@ ggplot(merged_stat_outer, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treat
         legend.position = "none",
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        # axis.text.x = element_blank(),
-        # axis.text.y = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
         axis.line = element_line(size = 0.15),
         axis.ticks = element_line(size = 0.15)
   )

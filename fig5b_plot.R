@@ -4,7 +4,7 @@ df_summ <- get_total_incorp_df()$df_summ
 
 # plot, average over microplates
 setEPS()
-postscript("figures/fig5b.eps", width = 1.5, height = 2.5)
+postscript("figures/fig5c_v2.eps", width = 1.35, height = 2.3)
 
 df_summ %>% mutate(SD = c_incorp_sd) %>%
   group_by(treatment) %>%
@@ -18,7 +18,7 @@ df_summ %>% mutate(SD = c_incorp_sd) %>%
   geom_errorbar(aes(ymin = SDPos-SD, ymax = SDPos+SD), width=0.1, linewidth=0.2, position = "identity", color='black') +
   scale_alpha_discrete(range=c(0.3, 1)) +
   # scale_fill_manual(values=c("#FFDFE1", "#D2DCFB", "#F8DFC4", "#D1D3D4")) +
-  scale_fill_manual(values=c("#E06666", "#4061f4", "#AB7942", "#5b5b5b")) +  
+  scale_fill_manual(values=c("#BC2329", "#4059A7", "#AB7942", "white")) +  
   # Alcani, Devosi, Marino, none
   ylab('carbon mass incorporation rate (ng C d-1)') +
   theme(strip.background = element_rect(fill=NA),
@@ -30,8 +30,8 @@ df_summ %>% mutate(SD = c_incorp_sd) %>%
         legend.position = "None",
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        # axis.text.x = element_blank(),
-        # axis.text.y = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
         axis.line = element_line(size = 0.2)
         # axis.ticks = element_blank()
   )
