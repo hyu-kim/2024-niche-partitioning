@@ -76,24 +76,34 @@ merged_df <- merge_indices(ecm_mat, mro_mat, incorp_df)
 # plot by heat
 merged_df_vis <- merged_df[merged_df$influencer=='Alcanivorax' | merged_df$influencer=='Devosia',]
 
-ggplot(merged_df_vis, aes(x=factor(measure, level=unique(measure)), y=-val, color=influencer)) + 
-  geom_bar(width = 0.8, stat='identity', position=position_dodge(width=.9), fill='grey95') + 
-  ylab('Competition index [AU]') +
-  # scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)) +
+ggplot(merged_df, 
+       aes(x = factor(influencer, levels=c('Marinobacter', 'Alcanivorax', 'Devosia', 'none')), 
+           y = factor(measure, levels=c('c_incorp', 'mro', 'ecm')), 
+           fill=val)) +
+  geom_tile(color='grey') +
+  scale_y_discrete(name='Measurement',
+                   breaks=c("ecm","mro","c_incorp"),
+                   labels=c("ECM", "MRO", 'PM')) +
+  xlab('Influencer') +
+  scale_fill_gradient(
+    low = "#DF2D07",
+    high = "#FFFFFF",
+    guide = "colourbar",
+    aesthetics = "fill"
+  ) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_blank(),
-        legend.position = "right",
+        legend.position = "bottom",
         legend.key.size = unit(3, 'mm'),
         # axis.title.x = element_blank(),
         # axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
         # axis.text.y = element_blank(),
-        text = element_text(size = 7),
-        axis.line = element_line(size = 0.25),
-        )
+        text = element_text(size = 7)
+  )
 
-ggsave("figures/fig6a_v2_draft.pdf", width = 3.5, height = 3)
+ggsave("figures/fig6a_v2.pdf", width = 1.8, height = 2)
