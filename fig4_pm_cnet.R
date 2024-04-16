@@ -4,7 +4,7 @@ library(ggforce)
 library("dplyr")
 # detach(package:plyr)
 library("ggbreak")
-source('fig_s_cnet_global.R')
+source('fig_s_Xnet_global.R')
 
 
 cnet <- read.csv("data/SIP_cnet_v2.csv")
