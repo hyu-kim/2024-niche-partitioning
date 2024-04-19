@@ -29,58 +29,94 @@ append_xnet <- function(xnet, xnet_info){
 }
 
 
-cnet <- read.csv("data/SIP_cnet_v2.csv")
-cnet <- cnet[cnet$Cnet>0,]
-nnet <- read.csv("data/SIP_nnet_v2.csv")
-nnet <- nnet[nnet$value>0,]
+permil_df <- read.csv("data/SIP_permil_v2.csv", check.names = FALSE)
 sample_info <- read.csv("data/SIP_sample_info.csv")
+sample_info$microplate <- as.character(sample_info$microplate)
 
+permil_append <- append_xnet(permil_df, sample_info)
 cnet_append <- append_xnet(cnet, sample_info)
 nnet_append <- append_xnet(nnet, sample_info)
 
-cnet_append_stat <- cnet_append %>%
+permil_app_stat <- permil_append %>%
   group_by(sample_name, treatment, microplate, ring) %>%
-  summarize(q25 = quantile(Cnet, probs = 0.25),
-            q50 = quantile(Cnet, probs = 0.5),
-            q75 = quantile(Cnet, probs = 0.75),
-            n = n(),
-            max = max(Cnet)
+  summarize(C_q25 = quantile(C_permil, probs = 0.25),
+            C_q50 = quantile(C_permil, probs = 0.5),
+            C_q75 = quantile(C_permil, probs = 0.75),
+            N_q25 = quantile(N_permil, probs = 0.25),
+            N_q50 = quantile(N_permil, probs = 0.5),
+            N_q75 = quantile(N_permil, probs = 0.75),
+            n = n()
             # cnet_mean = mean(Cnet),
             # cnet_sd = sd(Cnet),
             # replaced because we look for total incorp rate
   )
 
-nnet_append_stat <- nnet_append %>%
-  group_by(treatment, ring) %>%
-  summarize(q25 = quantile(value, probs = 0.25),
-            q50 = quantile(value, probs = 0.5),
-            q75 = quantile(value, probs = 0.75),
-            n = n(),
-            max = max(value)
-  )
 
+# figures for inner strains
+plot_scatter <- function(df=permil_append, loc='inner', save=TRUE){
+  df_vis <- subset(df, ring==loc)
+  p <- ggplot() +
+    geom_point(data = df_vis,
+               aes(x=N_permil, y=C_permil, color=treatment),
+               alpha=0.4,
+               size=1.5) +
+    # scale_y_continuous(trans = 'log10') +
+    # scale_x_continuous(trans = 'log10') +
+    
+  # facet_grid(cols = vars(treatment), rows = vars(microplate)) +
+  # geom_errorbar(data=cnet_append_stat,
+  #               aes(x=ring, ymin=cnet_q25, ymax=cnet_q75),
+  #               width = 0.15, color='black', size=0.4) +
+  # geom_errorbar(data=cnet_append_stat,
+  #               aes(x=ring, ymin=cnet_q50, ymax=cnet_q50),
+  #               width = 0.3, color='black', size=0.8) +
+  # geom_text(data=cnet_append_stat,
+  #           aes(x=ring, y=cnet_max, label=paste('n = ', cnet_n, sep='')),
+  #           position=position_dodge(width=0.9), vjust=-0.5, size=2.5) +
+    labs(x = '15N permil', y = "13C permil", title=loc) +
+    scale_color_manual(values=c("#E06666","#5E7BFB","#1a6b3b","#878787")) +
+    # Alcani, Devosi, Marino, none
+    theme(strip.background = element_rect(fill=NA),
+          panel.background = element_rect(fill = "transparent", color = NA),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          legend.position = "bottom",
+          axis.text.y.right = element_blank(),
+          axis.ticks.y.right = element_blank(),
+          axis.line.y.right = element_blank()
+    )
+  if(loc=='outer'){
+    p + ylim(NA, 1200)+ xlim(NA, 750)
+  }
+    
+  if(save){
+    ggsave(paste("figures/SIP_permil_",loc,".pdf",sep=''), width = 6, height = 6)
+  }
+  return()
+}
 
-# draw figures for Cnet
+plot_scatter(permil_append, 'inner', TRUE)
+plot_scatter(permil_append, 'outer', TRUE)
+
+permil_append_vis <- subset(permil_append, ring=='inner')
 ggplot() +
-  geom_sina(data = cnet_append,
-            aes(x=ring, y=value, color=treatment),
-            maxwidth = 0.8,
-            alpha=0.4,
-            size=0.3) +
-  facet_grid(cols = vars(treatment), rows = vars(microplate)) +
-  geom_errorbar(data=cnet_append_stat,
-                aes(x=ring, ymin=cnet_q25, ymax=cnet_q75),
-                width = 0.15, color='black', size=0.4) +
-  geom_errorbar(data=cnet_append_stat,
-                aes(x=ring, ymin=cnet_q50, ymax=cnet_q50),
-                width = 0.3, color='black', size=0.8) +
-  geom_text(data=cnet_append_stat,
-            aes(x=ring, y=cnet_max, label=paste('n = ', cnet_n, sep='')),
-            position=position_dodge(width=0.9), vjust=-0.5, size=2.5) +
-  labs(y = expression(C[net]), x = "Location") +
-  # ylim(NA, 0.24) +
-  # scale_y_continuous(breaks = append(seq(0, 0.09, 0.03), seq(0.10, 0.25, 0.1))) +
-  # scale_y_break(c(0.09, 0.10), scales=0.2) +
+  geom_point(data = permil_append_vis,
+            aes(x=N_permil, y=C_permil, color=treatment),
+            alpha=0.5,
+            size=1) +
+  # facet_grid(cols = vars(treatment), rows = vars(microplate)) +
+  # geom_errorbar(data=cnet_append_stat,
+  #               aes(x=ring, ymin=cnet_q25, ymax=cnet_q75),
+  #               width = 0.15, color='black', size=0.4) +
+  # geom_errorbar(data=cnet_append_stat,
+  #               aes(x=ring, ymin=cnet_q50, ymax=cnet_q50),
+  #               width = 0.3, color='black', size=0.8) +
+  # geom_text(data=cnet_append_stat,
+  #           aes(x=ring, y=cnet_max, label=paste('n = ', cnet_n, sep='')),
+  #           position=position_dodge(width=0.9), vjust=-0.5, size=2.5) +
+  labs(y = '15N permil', x = "13c permil", title='inner') +
   scale_color_manual(values=c("#E06666","#5E7BFB","#1a6b3b","#878787")) +
     # Alcani, Devosi, Marino, none
   theme(strip.background = element_rect(fill=NA),
@@ -89,13 +125,13 @@ ggplot() +
         panel.grid.minor = element_blank(),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_rect(colour = "black", fill=NA, size=0.5),
-        legend.position = "none",
+        legend.position = "bottom",
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.line.y.right = element_blank()
         )
 
-# ggsave("figures/SIP_cnet_global_v3.pdf", width = 8, height = 5)
+ggsave("figures/SIP_permil_inner.pdf", width = 4, height = 6)
 
 
 # figures for Nnet
