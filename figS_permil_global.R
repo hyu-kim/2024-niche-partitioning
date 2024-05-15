@@ -134,29 +134,43 @@ ggplot() +
 ggsave("figures/SIP_permil_inner.pdf", width = 4, height = 6)
 
 
-# figures for Nnet
+# figures for N-permil of Marinobacter
+permil_app_stat2 <- permil_append %>%
+  group_by(treatment, ring, strain) %>%
+  summarize(C_q25 = quantile(C_permil, probs = 0.25),
+            C_q50 = quantile(C_permil, probs = 0.5),
+            C_q75 = quantile(C_permil, probs = 0.75),
+            C_min = min(C_permil),
+            N_q25 = quantile(N_permil, probs = 0.25),
+            N_q50 = quantile(N_permil, probs = 0.5),
+            N_q75 = quantile(N_permil, probs = 0.75),
+            N_min = min(N_permil),
+            n = n()
+  )
+
+permil_append_vis <- subset(permil_append, strain=='Marinobacter')
+permil_app_stat2_vis <- subset(permil_app_stat2, strain=='Marinobacter')
+
+
 ggplot() +
-  geom_sina(data = nnet_append,
-            aes(x=ring, y=100*value, color=treatment),
+  geom_sina(data = permil_append_vis,
+            aes(x=ring, y=N_permil, color=treatment),
             maxwidth = 0.8,
-            alpha=0.3,
-            size=0.5) +
+            alpha=0.5,
+            size=0.4) +
   facet_grid(cols = vars(treatment)) +
-  geom_errorbar(data=nnet_append_stat,
-                aes(x=ring, ymin=100*q25, ymax=100*q75),
+  geom_errorbar(data=permil_app_stat2_vis,
+                aes(x=ring, ymin=N_q25, ymax=N_q75),
                 width = 0.15, color='black', size=0.4) +
-  geom_errorbar(data=nnet_append_stat,
-                aes(x=ring, ymin=100*q50, ymax=100*q50),
+  geom_errorbar(data=permil_app_stat2_vis,
+                aes(x=ring, ymin=N_q50, ymax=N_q50),
                 width = 0.3, color='black', size=0.8) +
-  geom_text(data=nnet_append_stat,
-            aes(x=ring, y=100*max, label=paste('n = ', n, sep='')),
+  geom_text(data=permil_app_stat2_vis,
+            aes(x=ring, y=N_min, label=paste('n = ', n, sep='')),
             position=position_dodge(width=0.9), vjust=-0.5, size=2.5) +
-  labs(y = expression(N[net]), x = "Location") +
-  scale_y_continuous(breaks = append(seq(0, 0.3, 0.1), seq(0.3, 2, 0.5))) +
-  scale_y_break(c(0.3, 0.32), scales=0.15) +
-  # ylim(NA, 0.01) +
-  # scale_y_continuous(breaks = append(seq(0, 0.09, 0.03), seq(0.10, 0.25, 0.1))) +
-  # scale_y_break(c(0.09, 0.10), scales=0.2) +
+  scale_y_continuous(breaks = append(seq(0, 750, 250), seq(1000, 5000, 1000))) +
+  scale_y_break(c(750, 751), scales=0.2) +
+  # scale_y_continuous(breaks = seq(0, 5000, 250)) +
   scale_color_manual(values=c("#E06666","#5E7BFB","#1a6b3b","#878787")) +
   # Alcani, Devosi, Marino, none
   theme(strip.background = element_rect(fill=NA),
@@ -166,13 +180,14 @@ ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_rect(colour = "black", fill=NA, size=0.2),
         legend.position = "none",
+        axis.text = element_text(colour = "black"),
+        axis.ticks = element_line(colour = 'black', size=0.2),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.line.y.right = element_blank(),
-        axis.text = element_text(colour = "black")
+        text = element_text(size = 8)
   )
 
-ggsave("figures/SIP_nnet_global.pdf", width = 6, height = 4)
+ggsave("figures/SIP_N_permil_Marino.pdf", width = 5, height = 4)
 
 
 # # statistical test
