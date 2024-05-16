@@ -34,8 +34,8 @@ sample_info <- read.csv("data/SIP_sample_info.csv")
 sample_info$microplate <- as.character(sample_info$microplate)
 
 permil_append <- append_xnet(permil_df, sample_info)
-cnet_append <- append_xnet(cnet, sample_info)
-nnet_append <- append_xnet(nnet, sample_info)
+# cnet_append <- append_xnet(cnet, sample_info)
+# nnet_append <- append_xnet(nnet, sample_info)
 
 permil_app_stat <- permil_append %>%
   group_by(sample_name, treatment, microplate, ring) %>%
@@ -97,8 +97,10 @@ plot_scatter <- function(df=permil_append, loc='inner', save=TRUE){
   return()
 }
 
+
 plot_scatter(permil_append, 'inner', TRUE)
 plot_scatter(permil_append, 'outer', TRUE)
+
 
 permil_append_vis <- subset(permil_append, ring=='inner')
 ggplot() +
@@ -154,19 +156,19 @@ permil_app_stat2_vis <- subset(permil_app_stat2, strain=='Marinobacter')
 
 ggplot() +
   geom_sina(data = permil_append_vis,
-            aes(x=ring, y=N_permil, color=treatment),
+            aes(x=treatment, y=N_permil, color=treatment),
             maxwidth = 0.8,
             alpha=0.5,
             size=0.4) +
-  facet_grid(cols = vars(treatment)) +
+  facet_grid(cols = vars(ring)) +
   geom_errorbar(data=permil_app_stat2_vis,
-                aes(x=ring, ymin=N_q25, ymax=N_q75),
+                aes(x=treatment, ymin=N_q25, ymax=N_q75),
                 width = 0.15, color='black', size=0.4) +
   geom_errorbar(data=permil_app_stat2_vis,
-                aes(x=ring, ymin=N_q50, ymax=N_q50),
+                aes(x=treatment, ymin=N_q50, ymax=N_q50),
                 width = 0.3, color='black', size=0.8) +
   geom_text(data=permil_app_stat2_vis,
-            aes(x=ring, y=N_min, label=paste('n = ', n, sep='')),
+            aes(x=treatment, y=N_min, label=paste('n = ', n, sep='')),
             position=position_dodge(width=0.9), vjust=-0.5, size=2.5) +
   scale_y_continuous(breaks = append(seq(0, 750, 250), seq(1000, 5000, 1000))) +
   scale_y_break(c(750, 751), scales=0.2) +
@@ -180,7 +182,7 @@ ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_rect(colour = "black", fill=NA, size=0.2),
         legend.position = "none",
-        axis.text = element_text(colour = "black"),
+        axis.text = element_text(colour = "black", size = 8),
         axis.ticks = element_line(colour = 'black', size=0.2),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
