@@ -1,10 +1,5 @@
-## An R-version to analyze flow cytometry reads
+## Modules used frequently throughout
 ## Compute a fold-increase, then correct by algae number
-library("Rmisc")
-library("ggplot2")
-library(ggforce)
-
-
 get_df <- function(fileloc = 'data/flow2_bact.csv'){
   df <- read.csv(file=fileloc)
   df <- df[df$Time!=0,]
@@ -109,4 +104,27 @@ get_df5 <- function(df){
   df5$Treatment <- factor(df5$Treatment, levels=c(3,1,4,2))
   
   return(df5)
+}
+
+
+append_xnet <- function(xnet, xnet_info){
+  xnet_app <- xnet
+  xnet_app$microplate <- NaN
+  xnet_app$ring <- NaN
+  xnet_app$strain <- NaN
+  xnet_app$treatment <- NaN
+  list_sample_name <- unique(xnet$sample_name)
+  for (s in list_sample_name){
+    mi <- xnet_info$microplate[xnet_info$sample_name==s]
+    ri <- xnet_info$ring[xnet_info$sample_name==s]
+    st <- xnet_info$strain[xnet_info$sample_name==s]
+    tr <- xnet_info$treatment[xnet_info$sample_name==s]
+    
+    xnet_app$microplate[xnet_app$sample_name==s] <- mi
+    xnet_app$ring[xnet_app$sample_name==s] <- ri
+    xnet_app$strain[xnet_app$sample_name==s] <- st
+    xnet_app$treatment[xnet_app$sample_name==s] <- tr
+  }
+  xnet_app <- xnet_app[(xnet_app$treatment!='none' | xnet_app$ring!='inner'),]
+  return(xnet_app)
 }

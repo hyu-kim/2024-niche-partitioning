@@ -83,7 +83,7 @@ count_bact_stat <- count_bact %>%
 merged_stat <- merge_count_cnet(count_bact_stat, cnet_stat)
 
 
-# plot
+# plot inner ring
 setEPS()
 # postscript("figures/fig5a_lagend.eps", width = 6, height = 6)
 postscript("figures/fig5a_v2.eps", width = 1.6, height = 1.6)
@@ -127,7 +127,7 @@ dev.off()
 merged_stat_outer <- merged_stat[merged_stat$ring=='outer',]
 
 setEPS()
-postscript("figures/fig5b_v3.eps", width = 1.6, height = 1.6)
+postscript("figures/figS_outer_Cnet_count.eps", width = 1.6, height = 1.6)
 
 ggplot(merged_stat_outer, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treatment)) + 
   geom_point(aes(size=n_cnet, fill=treatment, shape=ring), stroke=0.5) + 
@@ -136,7 +136,7 @@ ggplot(merged_stat_outer, aes(x=cnet_q50, y=count_mean, shape=ring, colour=treat
   scale_y_continuous(limits = c(0, 12.5e6), breaks=seq(0, 12e6, 4e6)) +
   # scale_x_continuous(limits = c(0.015, 0.05), breaks=seq(0.02, 0.05, 0.01)) +
   scale_size(range = c(1, 2.5)) +
-  scale_color_manual(values=c("#C00000", "#0432FF", "#AB7942", "#000000")) +
+  scale_color_manual(values=c("#C00000", "#0432FF", "#1a6b3b", "#000000")) +
   scale_fill_manual(values=c("#FFDFE1", "#D2DCFB", "#F8DFC4", "#ffffff")) +
   # scale_fill_manual(values=c("#FFDFE1", "#D2DCFB", "#F8DFC4", "#D1D3D4")) +
     # Alcani, Devosi, Marino, none
