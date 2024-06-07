@@ -1,26 +1,6 @@
-# source('figS_permil_global.R')
-append_xnet <- function(xnet, xnet_info){
-  xnet_app <- xnet
-  xnet_app$microplate <- NaN
-  xnet_app$ring <- NaN
-  xnet_app$strain <- NaN
-  xnet_app$treatment <- NaN
-  list_sample_name <- unique(xnet$sample_name)
-  for (s in list_sample_name){
-    mi <- xnet_info$microplate[xnet_info$sample_name==s]
-    ri <- xnet_info$ring[xnet_info$sample_name==s]
-    st <- xnet_info$strain[xnet_info$sample_name==s]
-    tr <- xnet_info$treatment[xnet_info$sample_name==s]
-    
-    xnet_app$microplate[xnet_app$sample_name==s] <- mi
-    xnet_app$ring[xnet_app$sample_name==s] <- ri
-    xnet_app$strain[xnet_app$sample_name==s] <- st
-    xnet_app$treatment[xnet_app$sample_name==s] <- tr
-  }
-  xnet_app <- xnet_app[(xnet_app$treatment!='none' | xnet_app$ring!='inner'),]
-  return(xnet_app)
-}
-
+library("dplyr")
+library("ggplot2")
+source('utils.R')
 
 permil_df <- read.csv("data/SIP_permil_v2.csv", check.names = FALSE)
 sample_info <- read.csv("data/SIP_sample_info.csv")
@@ -29,7 +9,7 @@ sample_info$microplate <- as.character(sample_info$microplate)
 permil_append <- append_xnet(permil_df, sample_info)
 
 permil_app_stat <- permil_append %>%
-  group_by(strain, treatment, ring) %>%  # better to exclude microplate for visibility..
+  group_by(strain, treatment, ring, microplate) %>%  # better to exclude microplate for visibility..
   summarize(N_q25 = quantile(N_permil, probs = 0.25),
             N_q50 = quantile(N_permil, probs = 0.5),
             N_q75 = quantile(N_permil, probs = 0.75),
@@ -41,13 +21,15 @@ permil_app_stat <- permil_append %>%
 
 
 # PLOT
-# postscript("figures/fig5b_v5.eps", width = 1.6, height = 1.6)
-ggplot(permil_app_stat, aes(x=N_q50, y=ROI_q50, shape=ring, colour=treatment)) + 
+permil_app_stat_vis <- subset(permil_app_stat, strain=='Marinobacter')
+
+ggplot(permil_app_stat_vis, aes(x=N_q50, y=ROI_q50, shape=ring, colour=treatment)) + 
   geom_point(aes(size=n, fill=treatment, shape=ring), stroke=0.3) + 
-  geom_errorbar(aes(ymax = ROI_q75, ymin = ROI_q25), width=0, linewidth=0.1) +
-  geom_errorbarh(aes(xmax = N_q75, xmin = N_q25), height=0, linewidth=0.1) +
-  scale_size(range = c(1, 2)) +
-  # scale_x_continuous(limits = c(0, 500)) +
+  # geom_errorbar(aes(ymax = ROI_q75, ymin = ROI_q25), width=0, linewidth=0.1) +
+  # geom_errorbarh(aes(xmax = N_q75, xmin = N_q25), height=0, linewidth=0.1) +
+  scale_size(range = c(1, 4)) +
+  # scale_x_continuous(transform = 'log') +
+  # scale_y_continuous(transform = 'log') +
   # Alcani, Devosi, Marino, none
   scale_color_manual(values=c("#C00000", "#0432FF", "#1a6b3b", "#000000")) +
   scale_fill_manual(values=c("#FFDFE1", "#D2DCFB", "#C4D2CA", "#ffffff")) +
